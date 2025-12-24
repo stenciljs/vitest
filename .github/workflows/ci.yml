@@ -79,6 +79,7 @@ jobs:
 
       - name: Build module
         run: pnpm build
+        run: pnpm install
 
       - name: Test examples
         run: pnpm test
