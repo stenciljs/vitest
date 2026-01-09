@@ -116,7 +116,7 @@ describe('my-button', () => {
 });
 ```
 
-### 4. Run tests
+### 5. Run tests
 
 ```json
 // package.json
