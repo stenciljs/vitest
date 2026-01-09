@@ -30,7 +30,7 @@ permissions: {}
 jobs:
   # Production release job - runs semantic-release for automated versioning
   production-release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && !inputs.npm_tag
     name: Production Release
     concurrency:
       group: release-production
