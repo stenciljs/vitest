@@ -1,3 +1,10 @@
+## [0.0.5](https://github.com/stenciljs/vitest/compare/v0.0.4...v0.0.5) (2026-01-09)
+
+
+### Bug Fixes
+
+* formatting and sync versions ([2dbe6cd](https://github.com/stenciljs/vitest/commit/2dbe6cd2251be279f844c128222bc420a297e66a))
+
 ## [0.0.4](https://github.com/stenciljs/vitest/compare/v0.0.3...v0.0.4) (2026-01-09)
 
 ### Bug Fixes

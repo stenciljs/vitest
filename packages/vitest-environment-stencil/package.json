@@ -1,6 +1,6 @@
 {
   "name": "vitest-environment-stencil",
-  "version": "0.1.2",
+  "version": "0.0.5",
   "description": "Custom Vitest environment for Stencil component testing",
   "type": "module",
   "main": "./index.mjs",
