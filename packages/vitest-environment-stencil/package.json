@@ -1,6 +1,6 @@
 {
   "name": "vitest-environment-stencil",
-  "version": "0.1.1",
+  "version": "0.0.1",
   "description": "Custom Vitest environment for Stencil component testing",
   "type": "module",
   "main": "./index.mjs",
@@ -21,7 +21,15 @@
     "stencil",
     "testing"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stenciljs/vitest",
+    "directory": "packages/vitest-environment-stencil"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@stencil/vitest": "latest"
+    "@stencil/vitest": "workspace:*"
   }
 }

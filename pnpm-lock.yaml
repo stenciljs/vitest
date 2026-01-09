@@ -15,13 +15,16 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       vitest-environment-stencil:
-        specifier: latest
-        version: 0.1.0(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16)
+        specifier: workspace:*
+        version: link:packages/vitest-environment-stencil
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
         version: 9.39.2
       '@semantic-release/changelog':
+        specifier: ^6.0.3
+        version: 6.0.3(semantic-release@25.0.2(typescript@5.8.3))
+      '@semantic-release/exec':
         specifier: ^6.0.3
         version: 6.0.3(semantic-release@25.0.2(typescript@5.8.3))
       '@semantic-release/git':
@@ -70,8 +73,8 @@ importers:
   packages/vitest-environment-stencil:
     dependencies:
       '@stencil/vitest':
-        specifier: latest
-        version: 0.0.1(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(playwright@1.57.0)(vitest@4.0.16)
+        specifier: workspace:*
+        version: link:../..
 
   test-project:
     dependencies:
@@ -417,33 +420,6 @@ packages:
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
-
-  '@johnjenkins/stencil-vitest@0.1.1':
-    resolution: {integrity: sha512-LKv5zyx8UTXGo1YrxNCa5NwZOyfEpKwH4ez2jRt1MZviw39wiLx/xDngZn1ulPY7h4/Xcq83goa+oR0rTZwkTg==}
-    engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
-    hasBin: true
-    peerDependencies:
-      '@playwright/test': '*'
-      '@stencil/core': ^4.0.0
-      '@vitest/browser-playwright': '*'
-      '@vitest/browser-webdriverio': '*'
-      '@wdio/globals': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      vitest: ^4.0.0 || ^3.0.0 || ^2.0.0
-    peerDependenciesMeta:
-      '@playwright/test':
-        optional: true
-      '@vitest/browser-playwright':
-        optional: true
-      '@vitest/browser-webdriverio':
-        optional: true
-      '@wdio/globals':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -830,6 +806,12 @@ packages:
     resolution: {integrity: sha512-mgdxrHTLOjOddRVYIYDo0fR3/v61GNN1YGkfbrjuIKg/uMgCd+Qzo3UAXJ+woLQQpos4pl5Esuw5A7AoNlzjUQ==}
     engines: {node: '>=18'}
 
+  '@semantic-release/exec@6.0.3':
+    resolution: {integrity: sha512-bxAq8vLOw76aV89vxxICecEa8jfaWwYITw6X74zzlO0mc/Bgieqx9kBRz9z96pHectiTAtsCwsQcUyLYWnp3VQ==}
+    engines: {node: '>=14.17'}
+    peerDependencies:
+      semantic-release: '>=18.0.0'
+
   '@semantic-release/git@10.0.1':
     resolution: {integrity: sha512-eWrx5KguUcU2wUPaO6sfvZI0wPafUKAMNC18aXY4EnNcrZL86dEmpNVnC9uMpGZkmZJ9EfCVJBQx4pV4EMGT1w==}
     engines: {node: '>=14.17'}
@@ -869,39 +851,6 @@ packages:
     resolution: {integrity: sha512-cTHBvYFLf4h61TVHLibZoJcomYAoC+TNW3oi1VHcZMpWQyp/h/pHG1XQeEpzuSscQc/SJJwOYb5IvQ8vVeeCNg==}
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
-
-  '@stencil/vitest@0.0.1':
-    resolution: {integrity: sha512-zYEksH+2ARh9UuY6N1+2OT6N1uZ6wuj4zpQynl0Kwk6vasgC+C1ZuTNG6vs8hHrvv+x5aYZkQLP3rnP2OKBOMw==}
-    engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
-    hasBin: true
-    peerDependencies:
-      '@playwright/test': '*'
-      '@stencil/core': ^4.0.0
-      '@vitest/browser-playwright': '*'
-      '@vitest/browser-preview': '*'
-      '@vitest/browser-webdriverio': '*'
-      '@wdio/globals': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      playwright: '*'
-      vitest: ^4.0.0 || ^3.0.0 || ^2.0.0
-    peerDependenciesMeta:
-      '@playwright/test':
-        optional: true
-      '@vitest/browser-playwright':
-        optional: true
-      '@vitest/browser-preview':
-        optional: true
-      '@vitest/browser-webdriverio':
-        optional: true
-      '@wdio/globals':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-      playwright:
-        optional: true
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -2753,9 +2702,6 @@ packages:
       yaml:
         optional: true
 
-  vitest-environment-stencil@0.1.0:
-    resolution: {integrity: sha512-rEczEd8KtcbkVpk6PjHwoxOCyVDQu0nt6KeFrxEsF7sdJXD9iOc0enjL7ZtIG0w5RXD5ObzuDi44GNTTyX4aBQ==}
-
   vitest@4.0.16:
     resolution: {integrity: sha512-E4t7DJ9pESL6E3I8nFjPa4xGUd3PmiWDLsDztS2qXSJWfHtbQnwAWylaBvSNY48I3vr8PTqIZlyK8TE3V3CA4Q==}
     engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
@@ -3150,18 +3096,6 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@johnjenkins/stencil-vitest@0.1.1(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16)':
-    dependencies:
-      '@stencil/core': 4.40.1
-      jiti: 2.6.1
-      local-pkg: 1.1.2
-      vitest: 4.0.16(@types/node@24.10.4)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0)
-      vitest-environment-stencil: 0.1.0(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16)
-    optionalDependencies:
-      '@vitest/browser-playwright': 4.0.16(playwright@1.57.0)(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1))(vitest@4.0.16)
-      happy-dom: 20.0.11
-      jsdom: 27.3.0
-
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
@@ -3467,6 +3401,18 @@ snapshots:
 
   '@semantic-release/error@4.0.0': {}
 
+  '@semantic-release/exec@6.0.3(semantic-release@25.0.2(typescript@5.8.3))':
+    dependencies:
+      '@semantic-release/error': 3.0.0
+      aggregate-error: 3.1.0
+      debug: 4.4.3
+      execa: 5.1.1
+      lodash: 4.17.21
+      parse-json: 5.2.0
+      semantic-release: 25.0.2(typescript@5.8.3)
+    transitivePeerDependencies:
+      - supports-color
+
   '@semantic-release/git@10.0.1(semantic-release@25.0.2(typescript@5.8.3))':
     dependencies:
       '@semantic-release/error': 3.0.0
@@ -3555,19 +3501,6 @@ snapshots:
       '@rollup/rollup-linux-x64-musl': 4.34.9
       '@rollup/rollup-win32-arm64-msvc': 4.34.9
       '@rollup/rollup-win32-x64-msvc': 4.34.9
-
-  '@stencil/vitest@0.0.1(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(playwright@1.57.0)(vitest@4.0.16)':
-    dependencies:
-      '@stencil/core': 4.40.1
-      jiti: 2.6.1
-      local-pkg: 1.1.2
-      vitest: 4.0.16(@types/node@24.10.4)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0)
-      vitest-environment-stencil: 0.1.0(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16)
-    optionalDependencies:
-      '@vitest/browser-playwright': 4.0.16(playwright@1.57.0)(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1))(vitest@4.0.16)
-      happy-dom: 20.0.11
-      jsdom: 27.3.0
-      playwright: 1.57.0
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
@@ -5422,19 +5355,6 @@ snapshots:
       '@types/node': 24.10.4
       fsevents: 2.3.3
       jiti: 2.6.1
-
-  vitest-environment-stencil@0.1.0(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16):
-    dependencies:
-      '@johnjenkins/stencil-vitest': 0.1.1(@stencil/core@4.40.1)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jsdom@27.3.0)(vitest@4.0.16)
-    transitivePeerDependencies:
-      - '@playwright/test'
-      - '@stencil/core'
-      - '@vitest/browser-playwright'
-      - '@vitest/browser-webdriverio'
-      - '@wdio/globals'
-      - happy-dom
-      - jsdom
-      - vitest
 
   vitest@4.0.16(@types/node@24.10.4)(@vitest/browser-playwright@4.0.16)(happy-dom@20.0.11)(jiti@2.6.1)(jsdom@27.3.0):
     dependencies:

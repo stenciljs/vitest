@@ -87,7 +87,12 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: pnpm release
 
-      - name: 🔍 Dry run semantic-release
+      - name: � Publish vitest-environment-stencil
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/vitest-environment-stencil
+        run: npm publish --access public --provenance
+
+      - name: �🔍 Dry run semantic-release
         if: ${{ inputs.dry_run }}
         run: pnpm release --dry-run
 
@@ -155,9 +160,13 @@ jobs:
       - name: 📝 Update package.json version
         run: |
           npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          cd packages/vitest-environment-stencil
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       - name: 🚀 Publish to npm
         run: |
+          npm publish --tag ${{ steps.version.outputs.npm_tag }} --access public --provenance
+          cd packages/vitest-environment-stencil
           npm publish --tag ${{ steps.version.outputs.npm_tag }} --access public --provenance
 
       - name: 🏷️ Create git tag
