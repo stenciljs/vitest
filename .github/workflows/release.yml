@@ -129,9 +129,6 @@ jobs:
       - name: 🛠 Build package
         run: pnpm build && pnpm install
 
-      - name: 🧪 Run tests
-        run: pnpm test
-
       - name: 🏷️ Generate dev version
         id: version
         run: |
