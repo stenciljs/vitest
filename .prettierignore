@@ -10,3 +10,4 @@ www/
 hydrate/
 test-project/src/components.d.ts
 pnpm-lock.yaml
+CHANGELOG.md
