@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { spawn, type ChildProcess } from 'child_process';
+import { existsSync, unlinkSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { createJiti } from 'jiti';
 
 /**
  * stencil-test - A wrapper that integrates Stencil build with Vitest testing.
@@ -24,11 +27,12 @@ import { spawn, type ChildProcess } from 'child_process';
  *   stencil-test [options] [testPathPattern]
  *
  * Stencil options:
- *   --watch          Run in watch mode (enables interactive Vitest features)
- *   --prod           Build in production mode (default: dev mode)
- *   --serve          Start dev server (with --watch)
- *   --port <number>  Dev server port (with --serve)
- *   --verbose        Show detailed Stencil output
+ *   --watch              Run in watch mode (enables interactive Vitest features)
+ *   --prod               Build in production mode (default: dev mode)
+ *   --serve              Start dev server (with --watch)
+ *   --port <number>      Dev server port (with --serve)
+ *   --stencil-config <path>  Path to stencil config file
+ *   --verbose            Show detailed Stencil output
  *
  * Vitest options:
  *   --project <name> Run tests for specific project
@@ -47,6 +51,7 @@ interface ParsedArgs {
   watch: boolean;
   serve: boolean;
   port?: string;
+  stencilConfig?: string;
   verbose: boolean;
   debug: boolean;
   prod: boolean;
@@ -106,6 +111,11 @@ function parseArgs(argv: string[]): ParsedArgs {
 
       case '--port':
         parsed.port = argv[i + 1];
+        i += 2;
+        break;
+
+      case '--stencil-config':
+        parsed.stencilConfig = argv[i + 1];
         i += 2;
         break;
 
@@ -195,12 +205,13 @@ Default (no flags): Build Stencil in dev mode and run tests once
 Watch mode: Build Stencil in watch mode and run Vitest with interactive features
 
 Stencil Options:
-  --watch              Run Stencil in watch mode (enables Vitest interactive mode)
-  --prod               Build in production mode (default: dev mode)
-  --serve              Start dev server (requires --watch)
-  --port <number>      Dev server port (default: 3333)
-  --verbose, -v        Show detailed logging
-  --debug              Enable Stencil debug mode
+  --watch                  Run Stencil in watch mode (enables Vitest interactive mode)
+  --prod                   Build in production mode (default: dev mode)
+  --serve                  Start dev server (requires --watch)
+  --port <number>          Dev server port (default: 3333)
+  --stencil-config <path>  Path to stencil config file
+  --verbose, -v            Show detailed logging
+  --debug                  Enable Stencil debug mode
 
 Vitest Options:
   --project <name>     Run tests for specific project
@@ -356,6 +367,190 @@ function handleStencilOutput(data: Buffer) {
 }
 
 /**
+ * Extracts screenshot directory patterns from vitest config to ignore in Stencil watch
+ */
+async function getScreenshotPatternsFromVitestConfig(customVitestConfig?: string): Promise<RegExp[]> {
+  const patterns: RegExp[] = [];
+
+  try {
+    let vitestConfigPath: string | undefined;
+
+    // Use custom config if provided via --config flag
+    if (customVitestConfig) {
+      const resolvedPath = join(cwd, customVitestConfig);
+      if (existsSync(resolvedPath)) {
+        vitestConfigPath = resolvedPath;
+      } else if (verbose) {
+        log(`Specified vitest config not found: ${customVitestConfig}, falling back to defaults`);
+      }
+    }
+
+    // Look for vitest.config.ts/js in common locations if no custom config
+    if (!vitestConfigPath) {
+      const possibleConfigs = [
+        join(cwd, 'vitest.config.ts'),
+        join(cwd, 'vitest.config.js'),
+        join(cwd, 'vitest.config.mjs'),
+      ];
+
+      vitestConfigPath = possibleConfigs.find(existsSync);
+    }
+
+    if (!vitestConfigPath) {
+      if (verbose) {
+        log('No vitest config found, using default screenshot patterns');
+      }
+      // Return sensible defaults
+      return [/__screenshots__/, /__snapshots__/, /\.(png|jpg|jpeg|webp|gif)$/];
+    }
+
+    if (verbose) {
+      log(`Loading vitest config from ${vitestConfigPath}`);
+    }
+
+    // Use jiti to load TypeScript/ESM config
+    const jiti = createJiti(cwd, { interopDefault: true });
+    const vitestConfig: any = await jiti.import(vitestConfigPath);
+
+    // Extract screenshot directory from browser test config
+    const projects = vitestConfig?.default?.test?.projects || vitestConfig?.test?.projects || [];
+
+    const customScreenshotDirs = new Set<string>();
+    for (const project of projects) {
+      const browserConfig = project?.test?.browser;
+      if (browserConfig?.enabled) {
+        const screenshotDir = browserConfig.expect?.toMatchScreenshot?.screenshotDirectory;
+        if (screenshotDir) {
+          customScreenshotDirs.add(screenshotDir);
+        }
+      }
+    }
+
+    // Add custom screenshot directories if found
+    for (const dir of customScreenshotDirs) {
+      patterns.push(new RegExp(`/${dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`));
+    }
+
+    // Always add default screenshot and snapshot directories
+    patterns.push(/__screenshots__/);
+    patterns.push(/__snapshots__/);
+    patterns.push(/\.vitest-attachments/);
+
+    // Always add common image extensions
+    patterns.push(/\.(png|jpg|jpeg|webp|gif)$/);
+
+    if (verbose && patterns.length > 0) {
+      log(`Extracted ${patterns.length} screenshot patterns from vitest config`);
+    }
+  } catch (error) {
+    if (verbose) {
+      log(`Failed to parse vitest config: ${error instanceof Error ? error.message : String(error)}`);
+      log('Using default screenshot patterns');
+    }
+    // Fallback to sensible defaults
+    return [/__screenshots__/, /__snapshots__/, /\.(png|jpg|jpeg|webp|gif)$/];
+  }
+
+  return patterns.length > 0 ? patterns : [/__screenshots__/, /__snapshots__/, /\.(png|jpg|jpeg|webp|gif)$/];
+}
+
+/**
+ * Creates a temporary stencil config that extends the user's config
+ * and adds watchIgnoredRegex patterns for screenshots
+ */
+async function createTemporaryStencilConfig(
+  userSpecifiedConfig?: string,
+  vitestConfigPath?: string,
+): Promise<string | null> {
+  try {
+    let userConfigPath: string | undefined;
+
+    // Use user-specified config if provided
+    if (userSpecifiedConfig) {
+      const resolvedPath = join(cwd, userSpecifiedConfig);
+      if (existsSync(resolvedPath)) {
+        userConfigPath = resolvedPath;
+      } else {
+        if (verbose) {
+          log(`Specified config file not found: ${userSpecifiedConfig}`);
+        }
+        return null;
+      }
+    } else {
+      // Find the user's stencil config using default locations
+      const possibleConfigs = [
+        join(cwd, 'stencil.config.ts'),
+        join(cwd, 'stencil.config.js'),
+        join(cwd, 'stencil.config.mjs'),
+      ];
+
+      userConfigPath = possibleConfigs.find(existsSync);
+
+      if (!userConfigPath) {
+        if (verbose) {
+          log('No stencil config found, skipping watchIgnoredRegex injection');
+        }
+        return null;
+      }
+    }
+
+    // Get screenshot patterns to ignore
+    const screenshotPatterns = await getScreenshotPatternsFromVitestConfig(vitestConfigPath);
+
+    // Load the user's config using jiti
+    const jiti = createJiti(cwd, { interopDefault: true });
+    const userConfig: any = await jiti.import(userConfigPath);
+
+    // Extract the actual config object
+    const actualConfig = userConfig.config || userConfig.default?.config || userConfig.default || userConfig;
+
+    // Merge with watchIgnoredRegex
+    const mergedConfig = {
+      ...actualConfig,
+      watchIgnoredRegex: [...(actualConfig?.watchIgnoredRegex || []), ...screenshotPatterns],
+    };
+
+    // Create temp file as sibling of stencil.config so tsconfig.json can be found
+    // Stencil looks for tsconfig.json relative to the config file location
+    const tempConfigPath = join(cwd, `.stencil-test-${Date.now()}.config.mjs`);
+
+    // Serialize the config - convert RegExp objects to strings for the output
+    const patternsArray = mergedConfig.watchIgnoredRegex.map((pattern: RegExp) => pattern.toString()).join(',\n    ');
+
+    // Create config without watchIgnoredRegex first
+    const { _watchIgnoredRegex, ...configWithoutWatch } = mergedConfig;
+
+    // Generate a simple config that doesn't need imports
+    const tempConfigContent = `
+// Auto-generated temporary config by stencil-test
+// This extends your stencil config and adds watchIgnoredRegex for screenshot files
+export const config = {
+${JSON.stringify(configWithoutWatch, null, 2).slice(2, -2)},
+  "watchIgnoredRegex": [
+    ${patternsArray}
+  ]
+};
+`;
+
+    writeFileSync(tempConfigPath, tempConfigContent, 'utf-8');
+
+    if (verbose) {
+      log(`Created temporary stencil config at ${tempConfigPath}`);
+      log(`Added ${screenshotPatterns.length} watch ignore patterns`);
+    }
+
+    return tempConfigPath;
+  } catch (error) {
+    if (verbose) {
+      log(`Failed to create temporary config: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    return null;
+  }
+}
+
+let tempStencilConfigPath: string | null = null;
+
+/**
  * Clean up child processes and optionally exit with code.
  */
 function cleanup(exitCode?: number) {
@@ -375,6 +570,18 @@ function cleanup(exitCode?: number) {
     stencilProcess = null;
   }
 
+  // Clean up temporary config file
+  if (tempStencilConfigPath && existsSync(tempStencilConfigPath)) {
+    try {
+      unlinkSync(tempStencilConfigPath);
+      if (verbose) {
+        log('Cleaned up temporary stencil config');
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
+
   if (typeof exitCode === 'number') {
     process.exit(exitCode);
   }
@@ -384,71 +591,105 @@ function cleanup(exitCode?: number) {
 process.on('SIGINT', () => cleanup());
 process.on('SIGTERM', () => cleanup());
 
-// Build Stencil arguments
-const stencilArgs = ['stencil', 'build'];
+// Main async function to setup and start the processes
+(async () => {
+  // Extract vitest --config path if provided
+  let vitestConfigPath: string | undefined;
+  const configIndex = args.vitestArgs.indexOf('--config');
+  if (configIndex !== -1 && configIndex + 1 < args.vitestArgs.length) {
+    vitestConfigPath = args.vitestArgs[configIndex + 1];
+  }
 
-// Add --dev by default, unless --prod is explicitly passed
-if (args.prod) {
-  stencilArgs.push('--prod');
-} else {
-  stencilArgs.push('--dev');
-}
+  // Create temporary stencil config in watch mode to prevent screenshot infinite loops
+  if (args.watch) {
+    tempStencilConfigPath = await createTemporaryStencilConfig(args.stencilConfig, vitestConfigPath);
+  }
 
-if (args.watch) {
-  stencilArgs.push('--watch');
-  log('Starting Stencil in watch mode...');
+  // Build Stencil arguments
+  const stencilArgs = ['stencil', 'build'];
 
-  if (args.serve) {
-    stencilArgs.push('--serve');
-    if (args.port) {
-      stencilArgs.push('--port', args.port);
+  // Add --dev by default, unless --prod is explicitly passed
+  if (args.prod) {
+    stencilArgs.push('--prod');
+  } else {
+    stencilArgs.push('--dev');
+  }
+
+  if (args.watch) {
+    stencilArgs.push('--watch');
+    log('Starting Stencil in watch mode...');
+
+    // Use temporary config if created, otherwise use user-specified config
+    if (tempStencilConfigPath) {
+      stencilArgs.push('--config', tempStencilConfigPath);
+      if (verbose) {
+        log('Using temporary config with screenshot ignore patterns');
+      }
+    } else if (args.stencilConfig) {
+      // If temp config creation failed but user specified a config, use it directly
+      stencilArgs.push('--config', args.stencilConfig);
+    }
+
+    if (args.serve) {
+      stencilArgs.push('--serve');
+      if (args.port) {
+        stencilArgs.push('--port', args.port);
+      }
+    }
+  } else {
+    log('Building Stencil...');
+
+    // In non-watch mode, just pass through the user's config if specified
+    if (args.stencilConfig) {
+      stencilArgs.push('--config', args.stencilConfig);
     }
   }
-} else {
-  log('Building Stencil...');
-}
 
-if (args.debug) {
-  stencilArgs.push('--debug');
-}
-
-// Add any additional stencil args
-stencilArgs.push(...args.stencilArgs);
-
-stencilProcess = spawn('npx', stencilArgs, {
-  cwd,
-  shell: true,
-});
-
-// Pipe stdout and watch for build completion
-stencilProcess.stdout?.on('data', handleStencilOutput);
-stencilProcess.stderr?.on('data', (data) => {
-  process.stderr.write(data);
-});
-
-stencilProcess.on('error', (error) => {
-  console.error('[stencil-test] Failed to start Stencil:', error);
-  process.exit(1);
-});
-
-stencilProcess.on('exit', (code) => {
-  if (verbose) {
-    log(`Stencil exited with code ${code}`);
+  if (args.debug) {
+    stencilArgs.push('--debug');
   }
 
-  // In one-time build mode, stencil exits after build
-  // Don't cleanup immediately - let tests finish first
-  if (!args.watch) {
-    stencilProcess = null;
-  } else {
-    // In watch mode, stencil shouldn't exit - if it does, something went wrong
-    log(`Stencil exited unexpectedly with code ${code}`);
-    cleanup(code || 1);
-  }
-});
+  // Add any additional stencil args
+  stencilArgs.push(...args.stencilArgs);
 
-// Watch mode: Vitest handles test file watching automatically
-// Stencil handles component file watching automatically
-if (args.watch && verbose) {
-  log('Watch mode enabled - Vitest will watch test files and Stencil will watch component files');
-}
+  stencilProcess = spawn('npx', stencilArgs, {
+    cwd,
+    shell: true,
+  });
+
+  // Pipe stdout and watch for build completion
+  stencilProcess.stdout?.on('data', handleStencilOutput);
+  stencilProcess.stderr?.on('data', (data) => {
+    process.stderr.write(data);
+  });
+
+  stencilProcess.on('error', (error) => {
+    console.error('[stencil-test] Failed to start Stencil:', error);
+    process.exit(1);
+  });
+
+  stencilProcess.on('exit', (code) => {
+    if (verbose) {
+      log(`Stencil exited with code ${code}`);
+    }
+
+    // In one-time build mode, stencil exits after build
+    // Don't cleanup immediately - let tests finish first
+    if (!args.watch) {
+      stencilProcess = null;
+    } else {
+      // In watch mode, stencil shouldn't exit - if it does, something went wrong
+      log(`Stencil exited unexpectedly with code ${code}`);
+      cleanup(code || 1);
+    }
+  });
+
+  // Watch mode: Vitest handles test file watching automatically
+  // Stencil handles component file watching automatically
+  if (args.watch && verbose) {
+    log('Watch mode enabled - Vitest will watch test files and Stencil will watch component files');
+  }
+})().catch((error) => {
+  console.error('[stencil-test] Fatal error:', error);
+  cleanup(1);
+});

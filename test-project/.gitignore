@@ -32,3 +32,6 @@ pnpm-debug.log*
 *.tmp
 .cache/
 .temp/
+
+# stencil-test temporary configs
+.stencil-test-*.config.mjs

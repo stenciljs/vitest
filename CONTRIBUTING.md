@@ -33,7 +33,8 @@ This installs all dependencies for the main package and workspaces.
 
 ```bash
 pnpm build
-pnpm test
+pnpm test:unit
+pnpm test:e2e
 ```
 
 ### 5. Run code quality checks

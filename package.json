@@ -59,7 +59,9 @@
   "scripts": {
     "build": "tsc && tsc -p tsconfig.bin.json",
     "dev": "tsc --watch",
-    "test": "pnpm --filter test-project test",
+    "test:e2e": "pnpm --filter test-project test",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:engines": "pnpm installed-check --no-workspaces --ignore-dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
