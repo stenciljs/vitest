@@ -73,7 +73,7 @@ export default defineVitestConfig({
 });
 ```
 
-[refer Vitest documentation for all configuration options](https://vitest.dev/config/)
+[refer to Vitest's documentation for all configuration options](https://vitest.dev/config/)
 
 ### 3. Load your components
 
