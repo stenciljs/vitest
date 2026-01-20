@@ -32,7 +32,6 @@ export class MyButton {
   private handleClick = (event: MouseEvent) => {
     if (!this.disabled) {
       this.buttonClick.emit(event);
-      // console.log('nice??');
     }
   };
 
