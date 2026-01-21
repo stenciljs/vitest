@@ -94,8 +94,7 @@ export {};
 ```tsx
 // src/components/my-button/my-button.spec.tsx
 
-import { describe, it, expect } from 'vitest';
-import { render, h } from '@stencil/vitest';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('my-button', () => {
   it('renders with text', async () => {

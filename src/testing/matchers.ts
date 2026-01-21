@@ -32,8 +32,6 @@ interface CustomMatchers<R = unknown> {
   toEqualText(expectedText: string): R;
   /** Asserts element has an attached shadow root. */
   toHaveShadowRoot(): R;
-  /** Asserts element will emit the specified event when interacted with. */
-  toEmitEvent(eventName: string): R;
   /** Asserts element's serialized HTML (including shadow DOM) matches expected HTML. */
   toEqualHtml(expectedHtml: string): R;
   /** Asserts element's light DOM HTML (excluding shadow DOM internals) matches expected HTML. */
