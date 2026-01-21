@@ -131,12 +131,15 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     return spy;
   };
 
-  const instance = (((element as any).__stencil__getHostRef()?.$lazyInstance$ as I) || element) as I;
+  let instance = element;
+  if ((element as any).__stencil__getHostRef) {
+    instance = (element as any).__stencil__getHostRef()?.$lazyInstance$ || element;
+  }
 
   return {
     root: element,
     waitForChanges,
-    instance,
+    instance: instance as unknown as I,
     setProps,
     unmount,
     spyOnEvent,

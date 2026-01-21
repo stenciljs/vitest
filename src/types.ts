@@ -74,7 +74,7 @@ export interface RenderResult<T = HTMLElement, I = any> {
   waitForChanges: () => Promise<void>;
 
   /**
-   * Tries to get the underlying component class instance.
+   * Tries to get the underlying class instance when `root` is a Stencil component.
    * If using `dist-custom-elements`, `instance` === `root`.
    */
   instance?: I;
