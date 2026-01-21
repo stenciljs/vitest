@@ -3,6 +3,7 @@
   "workspaces": {
     ".": {
       "entry": [
+        "src/core.ts",
         "src/config.ts",
         "src/environments/**/*.ts",
         "src/setup/happy-dom-setup.ts",

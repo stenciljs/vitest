@@ -62,9 +62,9 @@ export interface RenderOptions {
 /**
  * Render result for component testing
  */
-export interface RenderResult<T = HTMLElement> {
+export interface RenderResult<T = HTMLElement, I = any> {
   /**
-   * The rendered component element
+   * The rendered root element
    */
   root: T;
 
@@ -74,9 +74,10 @@ export interface RenderResult<T = HTMLElement> {
   waitForChanges: () => Promise<void>;
 
   /**
-   * Get the component instance (if available)
+   * Tries to get the underlying component class instance.
+   * If using `dist-custom-elements`, `instance` === `root`.
    */
-  instance?: any;
+  instance?: I;
 
   /**
    * Update component props
