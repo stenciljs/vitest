@@ -53,7 +53,7 @@ body:
       label: Reproduction URL
       description: |
         Link to a minimal reproduction. Use our [starter template](https://codesandbox.io/p/github/johnjenkins/stencil-starter-vitest).
-        For browser testing issues, provide a GitHub repository.
+        For browser testing issues, provide a [GitHub repository](https://github.com/johnjenkins/stencil-starter-vitest).
       placeholder: https://codesandbox.io/p/...
     validations:
       required: true
