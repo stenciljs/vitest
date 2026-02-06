@@ -1,3 +1,13 @@
+## [1.1.6](https://github.com/stenciljs/vitest/compare/v1.1.5...v1.1.6) (2026-02-06)
+
+
+### Bug Fixes
+
+* **bin:** fix config merge ([9df7203](https://github.com/stenciljs/vitest/commit/9df7203539a293f60b2ebf20b5ebb0a449396222))
+* **bin:** remove old code ([ed8b9c0](https://github.com/stenciljs/vitest/commit/ed8b9c019f20410fc9adeeb179b5485905d07c89))
+* **bin:** remove unused lines ([e7ac6a4](https://github.com/stenciljs/vitest/commit/e7ac6a42eee44b5852db4b57ce1bb6e12c37f3e2))
+* handle errors during build step ([3f1eef5](https://github.com/stenciljs/vitest/commit/3f1eef5a1fd4f9a979283d7a4c6b1861beaeeced))
+
 ## [1.1.5](https://github.com/stenciljs/vitest/compare/v1.1.4...v1.1.5) (2026-01-22)
 
 

@@ -517,20 +517,20 @@ async function createTemporaryStencilConfig(
     // Serialize the config - convert RegExp objects to strings for the output
     const patternsArray = mergedConfig.watchIgnoredRegex.map((pattern: RegExp) => pattern.toString()).join(',\n    ');
 
-    // Create config without watchIgnoredRegex first
-    const { _watchIgnoredRegex, ...configWithoutWatch } = mergedConfig;
-
-    // Generate a simple config that doesn't need imports
+    // Generate a simple config with user config import
     const tempConfigContent = `
-// Auto-generated temporary config by stencil-test
-// This extends your stencil config and adds watchIgnoredRegex for screenshot files
-export const config = {
-${JSON.stringify(configWithoutWatch, null, 2).slice(2, -2)},
-  "watchIgnoredRegex": [
-    ${patternsArray}
-  ]
-};
-`;
+    // Auto-generated temporary config by stencil-test
+    // This extends your stencil config and adds watchIgnoredRegex for screenshot files
+
+    import baseConfig from '${userConfigPath}';
+
+    export const config = {
+      ...baseConfig,
+      "watchIgnoredRegex": [
+        ${patternsArray}
+      ]
+    };
+    `;
 
     writeFileSync(tempConfigPath, tempConfigContent, 'utf-8');
 
