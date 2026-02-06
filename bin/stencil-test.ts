@@ -591,6 +591,10 @@ function cleanup(exitCode?: number) {
 process.on('SIGINT', () => cleanup());
 process.on('SIGTERM', () => cleanup());
 
+// Handle stdin close for cross-platform graceful shutdown (Windows doesn't support SIGTERM properly)
+process.stdin.on('close', () => cleanup());
+process.stdin.resume();
+
 // Main async function to setup and start the processes
 (async () => {
   // Extract vitest --config path if provided

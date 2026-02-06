@@ -383,6 +383,7 @@ function runCLIInDir(
     const proc = spawn('node', [BIN_PATH, ...args], {
       cwd,
       env: { ...process.env, NODE_ENV: 'test' },
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     let stdout = '';
@@ -398,7 +399,13 @@ function runCLIInDir(
 
     // Kill after timeout
     const timer = setTimeout(() => {
+      // Close stdin first to signal graceful shutdown (works cross-platform)
+      proc.stdin?.end();
+
+      // Then send SIGTERM for Unix systems
       proc.kill('SIGTERM');
+
+      // Force kill if still alive after grace period
       setTimeout(() => {
         if (!proc.killed) {
           proc.kill('SIGKILL');
