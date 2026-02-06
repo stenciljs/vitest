@@ -522,7 +522,7 @@ async function createTemporaryStencilConfig(
     // Auto-generated temporary config by stencil-test
     // This extends your stencil config and adds watchIgnoredRegex for screenshot files
 
-    import baseConfig from '${userConfigPath}';
+    import ${userConfig.config ? '{ config as baseConfig }' : 'baseConfig'} from '${userConfigPath}';
 
     export const config = {
       ...baseConfig,
