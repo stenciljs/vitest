@@ -1,3 +1,10 @@
+## [1.1.8](https://github.com/stenciljs/vitest/compare/v1.1.7...v1.1.8) (2026-02-09)
+
+
+### Bug Fixes
+
+* **bin:** added support for windows path ([#9](https://github.com/stenciljs/vitest/issues/9)) ([b5fd792](https://github.com/stenciljs/vitest/commit/b5fd7924ab607d7e6ba0bb61c46885ebf7d0f64d))
+
 ## [1.1.7](https://github.com/stenciljs/vitest/compare/v1.1.6...v1.1.7) (2026-02-06)
 
 
