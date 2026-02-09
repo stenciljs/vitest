@@ -520,8 +520,8 @@ async function createTemporaryStencilConfig(
 
     /**
      * Generate a simple config with user config import.
-     * 
-     * JSON.stringify for normalize path between windows and unix. 
+     *
+     * JSON.stringify for normalize path between windows and unix.
      * Windows: "C:\xxx\yyy" -> "C:\\xxx\\yyy"
      * Unix: "C:/xxx/yyy" -> "C:/xxx/yyy"
      */
