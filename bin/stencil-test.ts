@@ -2,7 +2,7 @@
 
 import { spawn, type ChildProcess } from 'child_process';
 import { existsSync, unlinkSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { extname, join } from 'path';
 import { createJiti } from 'jiti';
 
 /**
@@ -512,17 +512,24 @@ async function createTemporaryStencilConfig(
 
     // Create temp file as sibling of stencil.config so tsconfig.json can be found
     // Stencil looks for tsconfig.json relative to the config file location
-    const tempConfigPath = join(cwd, `.stencil-test-${Date.now()}.config.mjs`);
+    const ext = extname(userConfigPath);
+    const tempConfigPath = join(cwd, `.stencil-test-${Date.now()}.config${ext}`);
 
     // Serialize the config - convert RegExp objects to strings for the output
     const patternsArray = mergedConfig.watchIgnoredRegex.map((pattern: RegExp) => pattern.toString()).join(',\n    ');
 
-    // Generate a simple config with user config import
+    /**
+     * Generate a simple config with user config import.
+     *
+     * JSON.stringify for normalize path between windows and unix.
+     * Windows: "C:\xxx\yyy" -> "C:\\xxx\\yyy"
+     * Unix: "C:/xxx/yyy" -> "C:/xxx/yyy"
+     */
     const tempConfigContent = `
     // Auto-generated temporary config by stencil-test
     // This extends your stencil config and adds watchIgnoredRegex for screenshot files
 
-    import ${userConfig.config ? '{ config as baseConfig }' : 'baseConfig'} from '${userConfigPath}';
+    import ${userConfig.config ? '{ config as baseConfig }' : 'baseConfig'} from ${JSON.stringify(userConfigPath)};
 
     export const config = {
       ...baseConfig,
