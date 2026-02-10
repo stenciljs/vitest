@@ -95,9 +95,13 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   };
 
   const spyOnEvent = (eventName: string): EventSpy => {
-    // Return existing spy if already created
-    if (eventSpies.has(container)) {
-      return eventSpies.get(container)!.find((spy) => spy.eventName === eventName)!;
+    // Return existing spy if already created for this specific event
+    const existingSpies = eventSpies.get(container);
+    if (existingSpies) {
+      const existingSpy = existingSpies.find((spy) => spy.eventName === eventName);
+      if (existingSpy) {
+        return existingSpy;
+      }
     }
 
     const spy: EventSpy = {
