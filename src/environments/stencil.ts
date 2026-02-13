@@ -76,12 +76,11 @@ export default <Environment>{
       bindFunctions: true,
     });
 
-    const nativeEventConstructors = ['Event', 'CustomEvent', 'MessageEvent', 'ErrorEvent'];
-    nativeEventConstructors.forEach((name) => {
-      if (originals.has(name)) {
-        (global as any)[name] = originals.get(name);
-      }
-    });
+    // Restore Node's native Event constructor (chai needs this)
+    // CustomEvent can stay as mock-doc's version since it's needed for event creation
+    if (originals.has('Event')) {
+      (global as any).Event = originals.get('Event');
+    }
 
     // Remove undefined properties that shadow native globals
     keys.forEach((key) => {

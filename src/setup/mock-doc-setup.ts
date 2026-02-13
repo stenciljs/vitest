@@ -90,7 +90,6 @@ if (!isNodeEnvironment) {
   globalThis.document = doc as any;
   globalThis.HTMLElement = win.HTMLElement as any;
   globalThis.CustomEvent = win.CustomEvent as any;
-  globalThis.Event = win.Event as any;
   globalThis.Element = win.Element as any;
   globalThis.Node = win.Node as any;
   globalThis.DocumentFragment = win.DocumentFragment as any;
