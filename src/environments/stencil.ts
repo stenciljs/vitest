@@ -76,6 +76,13 @@ export default <Environment>{
       bindFunctions: true,
     });
 
+    const nativeEventConstructors = ['Event', 'CustomEvent', 'MessageEvent', 'ErrorEvent'];
+    nativeEventConstructors.forEach((name) => {
+      if (originals.has(name)) {
+        (global as any)[name] = originals.get(name);
+      }
+    });
+
     // Remove undefined properties that shadow native globals
     keys.forEach((key) => {
       if ((global as any)[key] === undefined && originals.has(key)) {
