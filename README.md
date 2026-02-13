@@ -101,7 +101,7 @@ describe('my-button', () => {
     const { root, waitForChanges } = await render(<my-button label="Click me" />);
     root.click();
     await waitForChanges();
-    expect(root).toEqualHtml(`
+    await expect(root).toEqualHtml(`
       <my-button class="hydrated">
         <mock:shadow-root>
           <button class="button button--secondary button--small" type="button">
@@ -171,8 +171,8 @@ expect(element).toEqualText('Exact text match');
 
 // Shadow DOM
 expect(element).toHaveShadowRoot();
-expect(element).toEqualHtml('<div>Expected HTML</div>');
-expect(element).toEqualLightHtml('<div>Light DOM only</div>');
+await expect(element).toEqualHtml('<div>Expected HTML</div>');
+await expect(element).toEqualLightHtml('<div>Light DOM only</div>');
 ```
 
 ### Event Testing
