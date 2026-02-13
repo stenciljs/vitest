@@ -1,3 +1,10 @@
+## [1.1.12](https://github.com/stenciljs/vitest/compare/v1.1.11...v1.1.12) (2026-02-13)
+
+
+### Bug Fixes
+
+* adjust mock-doc env when running without harness. Add env comments tests ([#11](https://github.com/stenciljs/vitest/issues/11)) ([fc2a0f8](https://github.com/stenciljs/vitest/commit/fc2a0f81b559e6f889c8167cee22b21589ffc314))
+
 ## [1.1.11](https://github.com/stenciljs/vitest/compare/v1.1.10...v1.1.11) (2026-02-13)
 
 
