@@ -1,3 +1,10 @@
+## [1.1.13](https://github.com/stenciljs/vitest/compare/v1.1.12...v1.1.13) (2026-02-13)
+
+
+### Bug Fixes
+
+* override chai globals in mock-docs ([#12](https://github.com/stenciljs/vitest/issues/12)) ([86bcbd2](https://github.com/stenciljs/vitest/commit/86bcbd22e7701031179811c6bcb6610a897bdecc))
+
 ## [1.1.12](https://github.com/stenciljs/vitest/compare/v1.1.11...v1.1.12) (2026-02-13)
 
 
