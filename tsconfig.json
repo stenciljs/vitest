@@ -16,5 +16,5 @@
     "jsxFragmentFactory": "Fragment"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test-project"]
+  "exclude": ["node_modules", "dist", "test-project", "test-project-env-comments"]
 }

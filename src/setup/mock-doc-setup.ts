@@ -5,7 +5,18 @@
  * IMPORTANT: This should only be imported/executed in Node.js runtime, not in browsers.
  * The projects-based config ensures this is only loaded for node:mock-doc projects.
  */
-import { MockWindow, setupGlobal, teardownGlobal } from '@stencil/core/mock-doc';
+
+// Try new package first, fall back to old for backward compatibility
+let mockDoc: any;
+try {
+  // @ts-ignore - may not exist in older Stencil versions
+  mockDoc = require('@stencil/mock-doc');
+} catch {
+  // @ts-ignore - may not exist in newer Stencil versions
+  mockDoc = require('@stencil/core/mock-doc');
+}
+
+const { MockWindow, setupGlobal, teardownGlobal } = mockDoc;
 
 /**
  * Apply polyfills to a window object for Stencil components

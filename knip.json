@@ -3,8 +3,8 @@
   "workspaces": {
     ".": {
       "entry": ["src/environments/**/*.ts", "bin/stencil-test.ts"],
-      "ignore": ["test-project/**", "dist/**"],
-      "ignoreDependencies": ["vitest-environment-stencil"]
+      "ignore": ["test-project/**", "dist/**", "test-project-env-comments/**"],
+      "ignoreDependencies": ["vitest-environment-stencil", "@stencil/mock-doc"]
     }
   }
 }

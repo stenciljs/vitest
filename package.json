@@ -88,6 +88,9 @@
     "@wdio/globals": {
       "optional": true
     },
+    "@stencil/mock-doc": {
+      "optional": true
+    },
     "jsdom": {
       "optional": true
     },

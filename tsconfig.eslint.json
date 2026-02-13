@@ -8,11 +8,18 @@
     "bin/**/*",
     "tests/**/*",
     "scripts/**/*",
+    "vitest.config.ts",
+
     "test-project/src/**/*",
     "test-project/stencil.config.ts",
     "test-project/vitest.config.ts",
     "test-project/vitest-setup.ts",
-    "vitest.config.ts",
+
+    "test-project-env-comments/src/**/*",
+    "test-project-env-comments/stencil.config.ts",
+    "test-project-env-comments/vitest.config.ts",
+    "test-project-env-comments/vitest-setup.ts",
+
     "packages/vitest-environment-stencil/**/*"
   ],
   "exclude": ["node_modules", "dist", "test-project/dist", "test-project/hydrate", "test-project/loader"]

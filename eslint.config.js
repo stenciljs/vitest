@@ -36,12 +36,21 @@ export default [
       'dist/**',
       'node_modules/**',
       'coverage/**',
+
       'test-project/dist/**',
       'test-project/loader/**',
       'test-project/.stencil/**',
       'test-project/www/**',
       'test-project/hydrate/**',
       'test-project/src/components.d.ts',
+
+      'test-project-env-comments/dist/**',
+      'test-project-env-comments/loader/**',
+      'test-project-env-comments/.stencil/**',
+      'test-project-env-comments/www/**',
+      'test-project-env-comments/hydrate/**',
+      'test-project-env-comments/src/components.d.ts',
+
       'packages/*/dist/**',
       'vitest-environment-stencil/**',
     ],

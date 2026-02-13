@@ -76,6 +76,13 @@ export default <Environment>{
       bindFunctions: true,
     });
 
+    // Remove undefined properties that shadow native globals
+    keys.forEach((key) => {
+      if ((global as any)[key] === undefined && originals.has(key)) {
+        (global as any)[key] = originals.get(key);
+      }
+    });
+
     return {
       teardown(global) {
         // Teardown the environment first (e.g., window.close())

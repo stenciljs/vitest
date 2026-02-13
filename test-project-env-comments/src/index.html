@@ -1,0 +1,78 @@
+<!doctype html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <title>Test Components</title>
+    <script type="module" src="/build/test-components.esm.js"></script>
+    <script nomodule src="/build/test-components.js"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin-bottom: 2rem;
+      }
+      .demo-section {
+        margin-bottom: 3rem;
+      }
+      .demo-section h2 {
+        margin-bottom: 1rem;
+      }
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test Components Demo</h1>
+
+    <div class="demo-section">
+      <h2>Buttons</h2>
+      <div class="button-group">
+        <my-button variant="primary">Primary Button</my-button>
+        <my-button variant="secondary">Secondary Button</my-button>
+        <my-button variant="danger">Danger Button</my-button>
+      </div>
+      <div class="button-group">
+        <my-button variant="primary" size="small">Small</my-button>
+        <my-button variant="primary" size="medium">Medium</my-button>
+        <my-button variant="primary" size="large">Large</my-button>
+      </div>
+      <div class="button-group">
+        <my-button variant="primary" disabled>Disabled</my-button>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Cards</h2>
+      <my-card title="Simple Card" elevation="1">
+        <p>This is a simple card with some content.</p>
+      </my-card>
+
+      <br />
+
+      <my-card title="Interactive Card" elevation="2" interactive>
+        <p>This card has hover effects!</p>
+        <div slot="footer">
+          <my-button variant="primary" size="small">Action</my-button>
+        </div>
+      </my-card>
+    </div>
+
+    <script>
+      // Add event listeners for demo
+      document.querySelectorAll('my-button').forEach((button) => {
+        button.addEventListener('buttonClick', (e) => {
+          console.log('Button clicked:', e.target);
+        });
+      });
+    </script>
+  </body>
+</html>

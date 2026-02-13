@@ -291,14 +291,21 @@ function toHaveShadowRoot(received: HTMLElement): { pass: boolean; message: () =
  * Parse HTML string to fragment
  */
 function parseHtmlFragment(html: string): DocumentFragment {
-  // Try mock-doc parser first
+  // Try mock-doc parser first (new package, then old)
   try {
-    const mockDoc = require('@stencil/core/mock-doc');
+    const mockDoc = require('@stencil/mock-doc');
     if (mockDoc.parseHtmlToFragment) {
       return mockDoc.parseHtmlToFragment(html);
     }
   } catch {
-    // Fall through to standard parser
+    try {
+      const mockDoc = require('@stencil/core/mock-doc');
+      if (mockDoc.parseHtmlToFragment) {
+        return mockDoc.parseHtmlToFragment(html);
+      }
+    } catch {
+      // Fall through to standard parser
+    }
   }
 
   // Use standard DOM parser (works in jsdom/happy-dom)
