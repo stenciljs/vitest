@@ -1,3 +1,10 @@
+## [1.1.11](https://github.com/stenciljs/vitest/compare/v1.1.10...v1.1.11) (2026-02-13)
+
+
+### Bug Fixes
+
+* bump stencil version ([445a880](https://github.com/stenciljs/vitest/commit/445a880564951149466dffb518f914aad2005d9e))
+
 ## [1.1.10](https://github.com/stenciljs/vitest/compare/v1.1.9...v1.1.10) (2026-02-13)
 
 
