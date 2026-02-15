@@ -50,7 +50,7 @@ describe('my-button - custom matchers', () => {
       expect(root).toEqualHtml(`
         <my-button class="hydrated">
           <mock:shadow-root>
-            <button class="button button--primary button--medium" disabled="" type="button">
+            <button class="button button--primary button--medium" disabled type="button">
               <slot></slot>
             </button>
           </mock:shadow-root>

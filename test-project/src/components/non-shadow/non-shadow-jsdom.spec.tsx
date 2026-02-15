@@ -23,7 +23,7 @@ describe('non-shadow-component serialization', () => {
         <non-shadow-component class="sc-non-shadow-component-h hydrated">
           <div class="wrapper sc-non-shadow-component">
             <div class="header sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb name="header" class="sc-non-shadow-component" hidden="">
+              <slot-fb name="header" class="sc-non-shadow-component" hidden>
                 Default Header
               </slot-fb>
               <span slot="header">
@@ -31,7 +31,7 @@ describe('non-shadow-component serialization', () => {
               </span>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb class="sc-non-shadow-component" hidden="">
+              <slot-fb class="sc-non-shadow-component" hidden>
                 Default Content
               </slot-fb>
               <p>
@@ -39,7 +39,7 @@ describe('non-shadow-component serialization', () => {
               </p>
             </div>
             <div class="footer sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb name="footer" class="sc-non-shadow-component" hidden="">
+              <slot-fb name="footer" class="sc-non-shadow-component" hidden>
                 Default Footer
               </slot-fb>
               <span slot="footer">
@@ -88,7 +88,7 @@ describe('non-shadow-component serialization', () => {
         <non-shadow-component class="sc-non-shadow-component-h hydrated">
           <div class="wrapper sc-non-shadow-component">
             <div class="header sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb name="header" class="sc-non-shadow-component" hidden="">
+              <slot-fb name="header" class="sc-non-shadow-component" hidden>
                 Default Header
               </slot-fb>
               <span slot="header">
@@ -137,7 +137,7 @@ describe('non-shadow-component serialization', () => {
                 </slot-fb>
               </div>
               <div class="content sc-non-shadow-component sc-non-shadow-component-s">
-                <slot-fb class="sc-non-shadow-component" hidden="">
+                <slot-fb class="sc-non-shadow-component" hidden>
                   Default Content
                 </slot-fb>
                 <span>
@@ -207,7 +207,7 @@ describe('non-shadow-component serialization', () => {
         <non-shadow-component class="sc-non-shadow-component-h hydrated">
           <div class="wrapper sc-non-shadow-component">
             <div class="header sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb name="header" class="sc-non-shadow-component" hidden="">
+              <slot-fb name="header" class="sc-non-shadow-component" hidden>
                 Default Header
               </slot-fb>
               <non-shadow-component slot="header" class="sc-non-shadow-component-h hydrated">
@@ -218,7 +218,7 @@ describe('non-shadow-component serialization', () => {
                     </slot-fb>
                   </div>
                   <div class="content sc-non-shadow-component sc-non-shadow-component-s">
-                    <slot-fb class="sc-non-shadow-component" hidden="">
+                    <slot-fb class="sc-non-shadow-component" hidden>
                       Default Content
                     </slot-fb>
                     <span>
@@ -234,7 +234,7 @@ describe('non-shadow-component serialization', () => {
               </non-shadow-component>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
-              <slot-fb class="sc-non-shadow-component" hidden="">
+              <slot-fb class="sc-non-shadow-component" hidden>
                 Default Content
               </slot-fb>
               <p>
