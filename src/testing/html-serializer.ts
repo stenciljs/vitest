@@ -81,7 +81,12 @@ function serializeElementWithShadow(
   if (elem.attributes) {
     for (let i = 0; i < elem.attributes.length; i++) {
       const attr = elem.attributes[i];
-      html += ` ${attr.name}="${attr.value}"`;
+      // Boolean attributes (empty string value) should not have ="value"
+      if (attr.value === '') {
+        html += ` ${attr.name}`;
+      } else {
+        html += ` ${attr.name}="${attr.value}"`;
+      }
     }
   }
 
