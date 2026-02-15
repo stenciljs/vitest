@@ -66,6 +66,9 @@ function serializeElementWithShadow(
         // Text node - include to match mock-doc
         const text = (child as any).textContent;
         if (text) html += text;
+      } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+        // Comment node
+        html += `<!--${(child as any).textContent}-->`;
       }
     }
     return html;
@@ -116,6 +119,9 @@ function serializeElementWithShadow(
         // Text node - include it (matches mock-doc behavior)
         const text = (child as any).textContent;
         if (text) html += text;
+      } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+        // Comment node
+        html += `<!--${(child as any).textContent}-->`;
       }
     }
 
@@ -140,6 +146,9 @@ function serializeElementWithShadow(
       // Text node - include it to match mock-doc behavior
       const text = (child as any).textContent;
       if (text) html += text;
+    } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+      // Comment node
+      html += `<!--${(child as any).textContent}-->`;
     }
   }
 
