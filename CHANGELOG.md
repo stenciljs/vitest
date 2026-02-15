@@ -1,3 +1,10 @@
+## [1.1.16](https://github.com/stenciljs/vitest/compare/v1.1.15...v1.1.16) (2026-02-15)
+
+
+### Bug Fixes
+
+* serialize comments ([#15](https://github.com/stenciljs/vitest/issues/15)) ([6696f67](https://github.com/stenciljs/vitest/commit/6696f679124713f67218878f0ece18653309b600))
+
 ## [1.1.15](https://github.com/stenciljs/vitest/compare/v1.1.14...v1.1.15) (2026-02-15)
 
 
