@@ -1,3 +1,10 @@
+## [1.1.14](https://github.com/stenciljs/vitest/compare/v1.1.13...v1.1.14) (2026-02-13)
+
+
+### Bug Fixes
+
+* chai / mock-doc Event conflicts ([#13](https://github.com/stenciljs/vitest/issues/13)) ([aa452a9](https://github.com/stenciljs/vitest/commit/aa452a9a33a373de8cd9f895c66ed046704aee44))
+
 ## [1.1.13](https://github.com/stenciljs/vitest/compare/v1.1.12...v1.1.13) (2026-02-13)
 
 
