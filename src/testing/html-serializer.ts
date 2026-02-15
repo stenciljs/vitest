@@ -66,6 +66,9 @@ function serializeElementWithShadow(
         // Text node - include to match mock-doc
         const text = (child as any).textContent;
         if (text) html += text;
+      } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+        // Comment node
+        html += `<!--${(child as any).textContent}-->`;
       }
     }
     return html;
@@ -81,7 +84,12 @@ function serializeElementWithShadow(
   if (elem.attributes) {
     for (let i = 0; i < elem.attributes.length; i++) {
       const attr = elem.attributes[i];
-      html += ` ${attr.name}="${attr.value}"`;
+      // Boolean attributes (empty string value) should not have ="value"
+      if (attr.value === '') {
+        html += ` ${attr.name}`;
+      } else {
+        html += ` ${attr.name}="${attr.value}"`;
+      }
     }
   }
 
@@ -111,6 +119,9 @@ function serializeElementWithShadow(
         // Text node - include it (matches mock-doc behavior)
         const text = (child as any).textContent;
         if (text) html += text;
+      } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+        // Comment node
+        html += `<!--${(child as any).textContent}-->`;
       }
     }
 
@@ -135,6 +146,9 @@ function serializeElementWithShadow(
       // Text node - include it to match mock-doc behavior
       const text = (child as any).textContent;
       if (text) html += text;
+    } else if ((child as any).nodeType === 8 && !!(child as any).textContent) {
+      // Comment node
+      html += `<!--${(child as any).textContent}-->`;
     }
   }
 
