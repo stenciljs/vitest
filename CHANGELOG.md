@@ -1,3 +1,10 @@
+## [1.1.15](https://github.com/stenciljs/vitest/compare/v1.1.14...v1.1.15) (2026-02-15)
+
+
+### Bug Fixes
+
+* do not include empty values (e.g. `=""`) on boolean attributes ([#14](https://github.com/stenciljs/vitest/issues/14)) ([587ac4c](https://github.com/stenciljs/vitest/commit/587ac4cb46242ced11f754c1cdbc99e755dc86cb))
+
 ## [1.1.14](https://github.com/stenciljs/vitest/compare/v1.1.13...v1.1.14) (2026-02-13)
 
 
