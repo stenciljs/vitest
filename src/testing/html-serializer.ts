@@ -4,6 +4,26 @@
  */
 
 /**
+ * HTML void elements (self-closing tags) that don't have closing tags
+ */
+const VOID_ELEMENTS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
+
+/**
  * Stencil non-shadow component with slot polyfill
  * For scoped components, Stencil monkey-patches DOM accessors and moves
  * the original accessors to __childNodes, __children, etc.
@@ -152,7 +172,10 @@ function serializeElementWithShadow(
     }
   }
 
-  html += `</${tagName}>`;
+  // Void elements don't have closing tags
+  if (!VOID_ELEMENTS.has(tagName)) {
+    html += `</${tagName}>`;
+  }
 
   return html;
 }
