@@ -1,3 +1,10 @@
+## [1.1.17](https://github.com/stenciljs/vitest/compare/v1.1.16...v1.1.17) (2026-02-15)
+
+
+### Bug Fixes
+
+* serializer self closing tags ([#16](https://github.com/stenciljs/vitest/issues/16)) ([a0079d1](https://github.com/stenciljs/vitest/commit/a0079d17ae8930c6226bb833d79f7760c698d2f4))
+
 ## [1.1.16](https://github.com/stenciljs/vitest/compare/v1.1.15...v1.1.16) (2026-02-15)
 
 
