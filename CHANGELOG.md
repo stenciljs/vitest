@@ -1,3 +1,10 @@
+## [1.1.19](https://github.com/stenciljs/vitest/compare/v1.1.18...v1.1.19) (2026-02-16)
+
+
+### Bug Fixes
+
+* serializer preserve svg element tagName case ([#19](https://github.com/stenciljs/vitest/issues/19)) ([1247db9](https://github.com/stenciljs/vitest/commit/1247db9bc8c96db061a9c800e4095e0bde84b5e8))
+
 ## [1.1.18](https://github.com/stenciljs/vitest/compare/v1.1.17...v1.1.18) (2026-02-16)
 
 
