@@ -1,3 +1,11 @@
+## [1.1.18](https://github.com/stenciljs/vitest/compare/v1.1.17...v1.1.18) (2026-02-16)
+
+
+### Bug Fixes
+
+* add shadowrootdelegatesfocus to serializer ([#17](https://github.com/stenciljs/vitest/issues/17)) ([8855698](https://github.com/stenciljs/vitest/commit/8855698c2e756bbd68962ec79c89d3317be0f245))
+* serialize namespaced attrs like `xlink:href` ([#18](https://github.com/stenciljs/vitest/issues/18)) ([6e04a9c](https://github.com/stenciljs/vitest/commit/6e04a9c37a92f79a60824013a7523e09fcdc603c))
+
 ## [1.1.17](https://github.com/stenciljs/vitest/compare/v1.1.16...v1.1.17) (2026-02-15)
 
 
