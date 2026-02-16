@@ -95,7 +95,9 @@ function serializeElementWithShadow(
   }
 
   const elem = element as HTMLElement;
-  const tagName = elem.tagName.toLowerCase();
+  // Use localName to preserve case for SVG elements (e.g., foreignObject, feGaussianBlur)
+  // For HTML elements, localName is already lowercase
+  const tagName = (elem as any).localName || elem.tagName.toLowerCase();
 
   // Build opening tag with attributes
   let html = `<${tagName}`;
