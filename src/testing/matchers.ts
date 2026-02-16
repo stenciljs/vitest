@@ -324,12 +324,15 @@ function toEqualHtml(
   }
 
   let receivedHtml: string;
+  let isStringComparison = false;
 
   // Serialize the received value
   if (typeof received === 'string') {
+    isStringComparison = true;
     const fragment = parseHtmlFragment(received);
-    // For string inputs, use innerHTML to avoid template wrapper
-    receivedHtml = (fragment as any).innerHTML || fragment.textContent || '';
+    // Use serializeHtml to preserve all elements including the outer ones
+    // Don't prettify for comparison - we'll normalize instead
+    receivedHtml = serializeHtml(fragment, { serializeShadowRoot: true, pretty: false });
   } else if ((received as any).nodeType === 11) {
     // Document fragment
     receivedHtml = serializeHtml(received as any, { serializeShadowRoot: true });
@@ -341,9 +344,17 @@ function toEqualHtml(
   }
 
   // Parse and serialize expected HTML for consistent formatting
-  // For expected HTML, just normalize whitespace without parsing through DOM
-  // to preserve custom elements like <mock:shadow-root>
-  let expectedHtml = normalizeHtml(expected.trim());
+  let expectedHtml: string;
+  if (isStringComparison) {
+    // When comparing strings, parse and serialize both the same way
+    const expectedFragment = parseHtmlFragment(expected.trim());
+    expectedHtml = serializeHtml(expectedFragment, { serializeShadowRoot: true, pretty: false });
+  } else {
+    // For element comparisons, just normalize to preserve <mock:shadow-root> tags
+    expectedHtml = expected.trim();
+  }
+
+  expectedHtml = normalizeHtml(expectedHtml);
   receivedHtml = normalizeHtml(receivedHtml);
 
   const pass = receivedHtml === expectedHtml;
@@ -372,12 +383,15 @@ function toEqualLightHtml(
   }
 
   let receivedHtml: string;
+  let isStringComparison = false;
 
   // Serialize the received value (without shadow DOM)
   if (typeof received === 'string') {
+    isStringComparison = true;
     const fragment = parseHtmlFragment(received);
-    // For string inputs, use innerHTML to avoid template wrapper
-    receivedHtml = (fragment as any).innerHTML || fragment.textContent || '';
+    // Use serializeHtml to preserve all elements including the outer ones
+    // Don't prettify for comparison - we'll normalize instead
+    receivedHtml = serializeHtml(fragment, { serializeShadowRoot: false, pretty: false });
   } else if ((received as any).nodeType === 11) {
     // Document fragment
     receivedHtml = serializeHtml(received as any, { serializeShadowRoot: false });
@@ -388,9 +402,18 @@ function toEqualLightHtml(
     throw new TypeError(`expect.toEqualLightHtml() value should be an element, shadow root, or string`);
   }
 
-  // For expected HTML, just normalize whitespace without parsing through DOM
-  // to preserve custom elements like <mock:shadow-root>
-  let expectedHtml = normalizeHtml(expected.trim());
+  // Parse and serialize expected HTML for consistent formatting
+  let expectedHtml: string;
+  if (isStringComparison) {
+    // When comparing strings, parse and serialize both the same way
+    const expectedFragment = parseHtmlFragment(expected.trim());
+    expectedHtml = serializeHtml(expectedFragment, { serializeShadowRoot: false, pretty: false });
+  } else {
+    // For element comparisons, just normalize to preserve <mock:shadow-root> tags
+    expectedHtml = expected.trim();
+  }
+
+  expectedHtml = normalizeHtml(expectedHtml);
   receivedHtml = normalizeHtml(receivedHtml);
 
   const pass = receivedHtml === expectedHtml;
