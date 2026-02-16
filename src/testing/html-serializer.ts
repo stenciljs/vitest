@@ -123,7 +123,17 @@ function serializeElementWithShadow(
 
   if (hasShadowRoot) {
     // Use mock:shadow-root format to match mock-doc's output
-    html += '<mock:shadow-root>';
+    // Include shadow root mode (open/closed) and other properties
+    const shadowRoot = elem.shadowRoot!;
+    let shadowRootTag = '<mock:shadow-root';
+
+    // Add delegatesFocus if true
+    if ((shadowRoot as any).delegatesFocus) {
+      shadowRootTag += ' shadowrootdelegatesfocus';
+    }
+
+    shadowRootTag += '>';
+    html += shadowRootTag;
 
     // Serialize shadow DOM children
     const shadowChildren = Array.from(elem.shadowRoot.childNodes);
