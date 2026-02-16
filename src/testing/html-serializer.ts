@@ -104,11 +104,19 @@ function serializeElementWithShadow(
   if (elem.attributes) {
     for (let i = 0; i < elem.attributes.length; i++) {
       const attr = elem.attributes[i];
+
+      // Handle namespaced attributes (e.g., xlink:href)
+      // Use prefix + localName if available, otherwise fall back to name
+      let attrName = attr.name;
+      if (attr.prefix && attr.localName) {
+        attrName = `${attr.prefix}:${attr.localName}`;
+      }
+
       // Boolean attributes (empty string value) should not have ="value"
       if (attr.value === '') {
-        html += ` ${attr.name}`;
+        html += ` ${attrName}`;
       } else {
-        html += ` ${attr.name}="${attr.value}"`;
+        html += ` ${attrName}="${attr.value}"`;
       }
     }
   }
