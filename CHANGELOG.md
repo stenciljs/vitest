@@ -1,3 +1,10 @@
+## [1.1.21](https://github.com/stenciljs/vitest/compare/v1.1.20...v1.1.21) (2026-02-17)
+
+
+### Bug Fixes
+
+* prettifyHtml self closing tag indentation ([#21](https://github.com/stenciljs/vitest/issues/21)) ([2e81500](https://github.com/stenciljs/vitest/commit/2e8150002c8a4d15412efcd8d10164ae055b481c))
+
 ## [1.1.20](https://github.com/stenciljs/vitest/compare/v1.1.19...v1.1.20) (2026-02-16)
 
 
