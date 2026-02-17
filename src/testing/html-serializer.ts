@@ -243,7 +243,7 @@ export function prettifyHtml(html: string): string {
       } else {
         // Opening tag
         lines.push(' '.repeat(indentLevel * indentSize) + part);
-        
+
         // Check if it's a void element - if so, don't increase indent
         const tagName = part.match(/<([^\s>/]+)/)?.[1]?.toLowerCase();
         if (!tagName || !VOID_ELEMENTS.has(tagName)) {
