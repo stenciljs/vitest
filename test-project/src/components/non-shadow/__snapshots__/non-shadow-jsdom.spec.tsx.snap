@@ -1,0 +1,50 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`non-shadow-component serialization > nested components > should serialize nested non-shadow components 1`] = `
+<non-shadow-component class="sc-non-shadow-component-h hydrated">
+  <div class="wrapper sc-non-shadow-component">
+    <div class="header sc-non-shadow-component sc-non-shadow-component-s">
+      <slot-fb name="header" class="sc-non-shadow-component" hidden>
+        Default Header
+      </slot-fb>
+      <non-shadow-component slot="header" class="sc-non-shadow-component-h hydrated">
+        <div class="wrapper sc-non-shadow-component">
+          <div class="header sc-non-shadow-component sc-non-shadow-component-s">
+            <slot-fb name="header" class="sc-non-shadow-component">
+              Default Header
+            </slot-fb>
+          </div>
+          <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+            <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
+            <slot-fb class="sc-non-shadow-component" hidden>
+              Default Content
+            </slot-fb>
+            <span>
+              Nested Header
+            </span>
+          </div>
+          <div class="footer sc-non-shadow-component sc-non-shadow-component-s">
+            <slot-fb name="footer" class="sc-non-shadow-component">
+              Default Footer
+            </slot-fb>
+          </div>
+        </div>
+      </non-shadow-component>
+    </div>
+    <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+      <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
+      <slot-fb class="sc-non-shadow-component" hidden>
+        Default Content
+      </slot-fb>
+      <p>
+        Main Content
+      </p>
+    </div>
+    <div class="footer sc-non-shadow-component sc-non-shadow-component-s">
+      <slot-fb name="footer" class="sc-non-shadow-component">
+        Default Footer
+      </slot-fb>
+    </div>
+  </div>
+</non-shadow-component>
+`;
