@@ -18,6 +18,7 @@ export class NonShadowComponent {
           <slot name="header">Default Header</slot>
         </div>
         <div class="content">
+          <img src="https://via.placeholder.com/150" alt="Placeholder Image" />
           <slot>Default Content</slot>
         </div>
         <div class="footer">

@@ -31,6 +31,7 @@ describe('non-shadow-component serialization', () => {
               </span>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+              <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
               <slot-fb class="sc-non-shadow-component" hidden>
                 Default Content
               </slot-fb>
@@ -63,6 +64,7 @@ describe('non-shadow-component serialization', () => {
               </slot-fb>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+              <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
               <slot-fb class="sc-non-shadow-component">
                 Default Content
               </slot-fb>
@@ -96,6 +98,7 @@ describe('non-shadow-component serialization', () => {
               </span>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+              <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
               <slot-fb class="sc-non-shadow-component">
                 Default Content
               </slot-fb>
@@ -137,6 +140,7 @@ describe('non-shadow-component serialization', () => {
                 </slot-fb>
               </div>
               <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+                <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
                 <slot-fb class="sc-non-shadow-component" hidden>
                   Default Content
                 </slot-fb>
@@ -203,6 +207,8 @@ describe('non-shadow-component serialization', () => {
         </non-shadow-component>,
       );
 
+      expect(result.root).toMatchSnapshot();
+
       expect(result.root).toEqualHtml(`
         <non-shadow-component class="sc-non-shadow-component-h hydrated">
           <div class="wrapper sc-non-shadow-component">
@@ -218,6 +224,7 @@ describe('non-shadow-component serialization', () => {
                     </slot-fb>
                   </div>
                   <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+                    <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
                     <slot-fb class="sc-non-shadow-component" hidden>
                       Default Content
                     </slot-fb>
@@ -234,6 +241,7 @@ describe('non-shadow-component serialization', () => {
               </non-shadow-component>
             </div>
             <div class="content sc-non-shadow-component sc-non-shadow-component-s">
+              <img src="https://via.placeholder.com/150" alt="Placeholder Image" class="sc-non-shadow-component">
               <slot-fb class="sc-non-shadow-component" hidden>
                 Default Content
               </slot-fb>

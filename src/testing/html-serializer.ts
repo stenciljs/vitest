@@ -238,13 +238,18 @@ export function prettifyHtml(html: string): string {
 
         lines.push(' '.repeat(indentLevel * indentSize) + part);
       } else if (part.endsWith('/>')) {
-        // Self-closing tag
+        // Self-closing tag (XML style)
         lines.push(' '.repeat(indentLevel * indentSize) + part);
       } else {
         // Opening tag
         lines.push(' '.repeat(indentLevel * indentSize) + part);
-        // Increase indent for next content
-        indentLevel++;
+        
+        // Check if it's a void element - if so, don't increase indent
+        const tagName = part.match(/<([^\s>/]+)/)?.[1]?.toLowerCase();
+        if (!tagName || !VOID_ELEMENTS.has(tagName)) {
+          // Not a void element, increase indent for next content
+          indentLevel++;
+        }
       }
     } else {
       // Text content - add on its own line with current indentation
