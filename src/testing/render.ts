@@ -82,6 +82,25 @@ export async function waitForStable(elementOrSelector: Element | string, timeout
 }
 
 /**
+ * Poll until element exists in the DOM.
+ * Accepts a CSS selector string and waits for a matching element to appear.
+ * Works in both real browsers and mock DOM environments.
+ */
+export async function waitForExist(selector: string, timeout = 5000): Promise<Element | null> {
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    const element = document.querySelector(selector);
+    if (element) {
+      return element;
+    }
+    await new Promise((r) => setTimeout(r, 16));
+  }
+
+  return null;
+}
+
+/**
  * Render using Stencil's render
  */
 export async function render<T extends HTMLElement = HTMLElement, I = any>(

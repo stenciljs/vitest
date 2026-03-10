@@ -292,6 +292,22 @@ await waitForStable('my-component', 10000);
 
 > **Note:** In non-browser environments, `waitForStable` logs a warning and returns immediately.
 
+### `waitForExist(selector, timeout?)`
+
+Waits for an element matching the selector to exist in the DOM. Unlike `waitForStable`, this works in both real browsers and mock DOM environments (jsdom/happy-dom).
+
+Returns the element if found, or `null` if timeout is reached.
+
+```tsx
+import { waitForExist } from '@stencil/vitest';
+
+// Wait for an element to appear in the DOM
+const element = await waitForExist('my-component .lazy-loaded');
+
+// Custom timeout (default: 5000ms)
+const element = await waitForExist('#dynamic-content', 10000);
+```
+
 ## CLI
 
 The `stencil-test` CLI wraps both Stencil builds with Vitest testing.
