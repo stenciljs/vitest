@@ -270,6 +270,28 @@ const formatted = prettifyHtml('<div><span>Hello</span></div>');
 // </div>
 ```
 
+### `waitForStable(elementOrSelector, timeout?)`
+
+Waits for an element to be rendered and visible in the DOM. Only works in real browser environments (not jsdom/happy-dom).
+
+Accepts either an `Element` or a CSS selector string. When a selector is provided, it polls until the element appears in the DOM.
+
+```tsx
+import { render, waitForStable, h } from '@stencil/vitest';
+
+// Wait for a rendered element to be stable / visible
+const { root } = await render(<my-component />);
+await waitForStable(root);
+
+// Wait for an element using a selector (useful when element isn't in DOM yet)
+await waitForStable('my-component .inner-element');
+
+// Custom timeout (default: 5000ms)
+await waitForStable('my-component', 10000);
+```
+
+> **Note:** In non-browser environments, `waitForStable` logs a warning and returns immediately.
+
 ## CLI
 
 The `stencil-test` CLI wraps both Stencil builds with Vitest testing.
