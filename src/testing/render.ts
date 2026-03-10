@@ -42,18 +42,43 @@ function isRealBrowser(): boolean {
 }
 
 /**
- * Poll until element has dimensions (is rendered/visible in real browser)
+ * Poll until element has dimensions (is rendered/visible in real browser).
+ * Accepts either an Element or a CSS selector string.
+ * If a selector is provided, waits for the element to appear in the DOM first.
  */
-async function waitForRendered(element: Element, timeout = 5000): Promise<void> {
+export async function waitForStable(elementOrSelector: Element | string, timeout = 5000): Promise<void> {
+  if (!isRealBrowser()) {
+    console.warn('[waitForStable] Only works in real browser environments');
+    return;
+  }
+
   const start = Date.now();
+
+  // Resolve element from selector if needed
+  let element: Element | null = typeof elementOrSelector === 'string' ? null : elementOrSelector;
+
+  // If an Element was passed, verify it's in the DOM
+  if (element && !document.contains(element)) {
+    console.warn('[waitForStable] Element is not attached to the DOM');
+  }
+
   while (Date.now() - start < timeout) {
-    const rect = element.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      return;
+    // If we have a selector, try to find the element
+    if (typeof elementOrSelector === 'string' && !element) {
+      element = document.querySelector(elementOrSelector);
     }
+
+    // If we have an element, check if it has dimensions
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return;
+      }
+    }
+
     await new Promise((r) => requestAnimationFrame(r));
   }
-  // Don't throw on timeout - element might be intentionally zero-sized
+  // Don't throw on timeout - element might be intentionally zero-sized or not found
 }
 
 /**
@@ -129,7 +154,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   if (options.waitForReady !== false) {
     if (isRealBrowser()) {
       // In real browser, poll until element has dimensions
-      await waitForRendered(element);
+      await waitForStable(element);
     }
     // Always wait for Stencil's update cycle to complete
     await waitForChanges();
