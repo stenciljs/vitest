@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/stenciljs/vitest/compare/v1.3.0...v1.4.0) (2026-03-10)
+
+
+### Features
+
+* `waitForExist` utility ([#24](https://github.com/stenciljs/vitest/issues/24)) ([b8978ab](https://github.com/stenciljs/vitest/commit/b8978ab3a6bcb794b8268fd36243df9ef605cc28))
+
 # [1.3.0](https://github.com/stenciljs/vitest/compare/v1.2.0...v1.3.0) (2026-03-10)
 
 
