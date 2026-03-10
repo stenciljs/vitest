@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/stenciljs/vitest/compare/v1.1.21...v1.2.0) (2026-03-10)
+
+
+### Features
+
+* **render:** add `waitForReady` option to wait for first render in browser mode (defaults to `true`) ([#22](https://github.com/stenciljs/vitest/issues/22)) ([32e36c1](https://github.com/stenciljs/vitest/commit/32e36c1425e28857cc21c6c1550ceace47e35389))
+
 ## [1.1.21](https://github.com/stenciljs/vitest/compare/v1.1.20...v1.1.21) (2026-02-17)
 
 
