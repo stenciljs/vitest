@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/stenciljs/vitest/compare/v1.2.0...v1.3.0) (2026-03-10)
+
+
+### Features
+
+* `waitForStable` for browser mode ([#23](https://github.com/stenciljs/vitest/issues/23)) ([c8e3a9c](https://github.com/stenciljs/vitest/commit/c8e3a9c111fd150c0c1b8e732294dbdd0112de2b))
+
 # [1.2.0](https://github.com/stenciljs/vitest/compare/v1.1.21...v1.2.0) (2026-03-10)
 
 
