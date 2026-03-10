@@ -2,12 +2,59 @@ import { render as stencilRender } from '@stencil/core';
 import type { RenderResult, EventSpy } from '../types.js';
 
 interface RenderOptions {
+  /**
+   * Whether to clear existing stage containers before rendering. Defaults to true.
+   */
   clearStage?: boolean;
+  /**
+   * Attributes to set on the stage container element. Defaults to { class: 'stencil-component-stage' }.
+   */
   stageAttrs?: Record<string, string>;
+  /**
+   * Wait for the component to be fully rendered before returning.
+   * In browser mode, this polls until the element has dimensions.
+   * Defaults to true.
+   */
+  waitForReady?: boolean;
 }
 
 // Track event spies
 const eventSpies = new WeakMap<HTMLElement, EventSpy[]>();
+
+/**
+ * Detect if we're running in a real browser vs a mock DOM environment
+ */
+function isRealBrowser(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!navigator.webdriver) return false;
+
+  const ua = navigator?.userAgent ?? '';
+
+  if (ua.includes('jsdom')) return false;
+  if ('happyDOM' in window) return false;
+  if ('__stencil_mock_doc__' in window) return false;
+
+  if (typeof process !== 'undefined' && process.versions?.node) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Poll until element has dimensions (is rendered/visible in real browser)
+ */
+async function waitForRendered(element: Element, timeout = 5000): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    const rect = element.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      return;
+    }
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  // Don't throw on timeout - element might be intentionally zero-sized
+}
 
 /**
  * Render using Stencil's render
@@ -19,11 +66,11 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     stageAttrs: { class: 'stencil-component-stage' },
   },
 ): Promise<RenderResult<T, I>> {
-  // Use Stencil's render which handles VNodes properly in the browser
   const container = document.createElement('div');
   Object.entries(options.stageAttrs || {}).forEach(([key, value]) => {
     container.setAttribute(key, value);
   });
+
   if (options.clearStage) {
     // Clear existing stage containers
     const existingStages = document.body.querySelectorAll('div');
@@ -31,6 +78,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   }
   document.body.appendChild(container);
 
+  // Use Stencil's render which handles VNodes properly in the browser
   await stencilRender(vnode, container);
 
   // Get the rendered element
@@ -45,25 +93,25 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     await (element as any).componentOnReady();
   }
 
-  function waitForChanges(documentElement = element) {
+  // Define waitForChanges first so we can use it in the ready check
+  function waitForChanges(documentElement: Element = element) {
     return new Promise<void>((resolve) => {
       // Wait for Stencil's RAF-based update cycle
       // Use multiple RAF cycles to ensure all batched updates complete
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const promiseChain = [];
-          const waitComponentOnReady = (elm, promises) => {
+          const promiseChain: Promise<void>[] = [];
+          const waitComponentOnReady = (elm: Element | ShadowRoot | null, promises: Promise<void>[]) => {
             if (!elm) return;
-            if ('shadowRoot' in elm) {
+            if ('shadowRoot' in elm && elm.shadowRoot) {
               waitComponentOnReady(elm.shadowRoot, promises);
             }
             const children = elm.children;
             const len = children.length;
             for (let i = 0; i < len; i++) {
-              const childElm = children[i];
-              const childStencilElm = childElm;
-              if (childElm.tagName.includes('-') && typeof childStencilElm.componentOnReady === 'function') {
-                promises.push(childStencilElm.componentOnReady().then(() => {}));
+              const childElm = children[i] as HTMLElement & { componentOnReady?: () => Promise<void> };
+              if (childElm.tagName.includes('-') && typeof childElm.componentOnReady === 'function') {
+                promises.push(childElm.componentOnReady().then(() => {}));
               }
               waitComponentOnReady(childElm, promises);
             }
@@ -75,6 +123,16 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
         });
       });
     });
+  }
+
+  // Wait for component to be fully rendered if requested (default: true)
+  if (options.waitForReady !== false) {
+    if (isRealBrowser()) {
+      // In real browser, poll until element has dimensions
+      await waitForRendered(element);
+    }
+    // Always wait for Stencil's update cycle to complete
+    await waitForChanges();
   }
 
   const setProps = async (newProps: Record<string, any>) => {
