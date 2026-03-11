@@ -101,10 +101,10 @@ export async function waitForExist(selector: string, timeout = 5000): Promise<El
 }
 
 /**
- * Render using Stencil's render
+ * Render using Stencil's render or raw HTML template string
  */
 export async function render<T extends HTMLElement = HTMLElement, I = any>(
-  vnode: any,
+  template: any | string,
   options: RenderOptions = {
     clearStage: true,
     stageAttrs: { class: 'stencil-component-stage' },
@@ -122,8 +122,13 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   }
   document.body.appendChild(container);
 
-  // Use Stencil's render which handles VNodes properly in the browser
-  await stencilRender(vnode, container);
+  if (typeof template === 'string') {
+    // Handle string template - add as innerHTML
+    container.innerHTML = template;
+  } else {
+    // Use Stencil's render which handles VNodes properly in the browser
+    await stencilRender(template, container);
+  }
 
   // Get the rendered element
   const element = container.firstElementChild as T;
