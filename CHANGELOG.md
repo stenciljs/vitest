@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/stenciljs/vitest/compare/v1.4.0...v1.5.0) (2026-03-11)
+
+
+### Features
+
+* `render()` - allow template string ([#25](https://github.com/stenciljs/vitest/issues/25)) ([4fe00cc](https://github.com/stenciljs/vitest/commit/4fe00cc7cded73a0fb0f9474631f929f3353fec1))
+
 # [1.4.0](https://github.com/stenciljs/vitest/compare/v1.3.0...v1.4.0) (2026-03-10)
 
 
