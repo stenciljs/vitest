@@ -260,8 +260,8 @@ export default {
 
       const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
 
-      // Should add watch ignore patterns
-      expect(result.stdout).toMatch(/Added.*watch ignore patterns/);
+      // Should add watch ignore patterns (screenshot and test file patterns)
+      expect(result.stdout).toMatch(/Added.*screenshot patterns and.*test file patterns/);
     });
 
     it('should merge user watchIgnoredRegex with screenshot patterns', async () => {
@@ -302,6 +302,172 @@ export default {
         // Should have screenshot patterns
         expect(tempConfigContent).toMatch(/__screenshots__|\.png/);
       }
+    });
+  });
+
+  describe('test file ignore patterns', () => {
+    it('should extract test file patterns from vitest config include', async () => {
+      const stencilConfig = `
+export const config = {
+  namespace: 'test',
+  outputTargets: [{ type: 'dist' }]
+};
+`;
+      writeFileSync(join(testDir, 'stencil.config.ts'), stencilConfig);
+
+      const vitestConfig = `
+export default {
+  test: {
+    include: ['**/*.spec.ts', '**/*.test.ts']
+  }
+};
+`;
+      writeFileSync(join(testDir, 'vitest.config.ts'), vitestConfig);
+
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+
+      const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
+
+      // Should extract test file patterns
+      expect(result.stdout).toMatch(/Extracted.*test file patterns/);
+    });
+
+    it('should extract test file patterns from project-level include', async () => {
+      const stencilConfig = `
+export const config = {
+  namespace: 'test',
+  outputTargets: [{ type: 'dist' }]
+};
+`;
+      writeFileSync(join(testDir, 'stencil.config.ts'), stencilConfig);
+
+      const vitestConfig = `
+export default {
+  test: {
+    projects: [
+      {
+        test: {
+          include: ['src/**/*.unit.ts']
+        }
+      },
+      {
+        test: {
+          include: ['e2e/**/*.e2e.ts']
+        }
+      }
+    ]
+  }
+};
+`;
+      writeFileSync(join(testDir, 'vitest.config.ts'), vitestConfig);
+
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+
+      const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
+
+      // Should extract test file patterns from projects
+      expect(result.stdout).toMatch(/Extracted.*test file patterns/);
+    });
+
+    it('should include test file patterns in temporary config', async () => {
+      const stencilConfig = `
+export const config = {
+  namespace: 'test',
+  outputTargets: [{ type: 'dist' }]
+};
+`;
+      writeFileSync(join(testDir, 'stencil.config.ts'), stencilConfig);
+
+      const vitestConfig = `
+export default {
+  test: {
+    include: ['**/*.mytest.ts']
+  }
+};
+`;
+      writeFileSync(join(testDir, 'vitest.config.ts'), vitestConfig);
+
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+
+      const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 3000);
+
+      // Check that temp config was created with test file patterns
+      expect(result.stdout).toMatch(/Created temporary/);
+
+      const tempConfigs = require('fs')
+        .readdirSync(testDir)
+        .filter((f: string) => f.startsWith('.stencil-test-'));
+
+      if (tempConfigs.length > 0) {
+        const tempConfigContent = require('fs').readFileSync(join(testDir, tempConfigs[0]), 'utf-8');
+        // Should have test file pattern converted to regex
+        expect(tempConfigContent).toMatch(/mytest/);
+      }
+    });
+
+    it('should use default test file patterns when no include specified', async () => {
+      const stencilConfig = `
+export const config = {
+  namespace: 'test',
+  outputTargets: [{ type: 'dist' }]
+};
+`;
+      writeFileSync(join(testDir, 'stencil.config.ts'), stencilConfig);
+
+      const vitestConfig = `
+export default {
+  test: {
+    projects: []
+  }
+};
+`;
+      writeFileSync(join(testDir, 'vitest.config.ts'), vitestConfig);
+
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+
+      const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 3000);
+
+      // Check that temp config was created
+      expect(result.stdout).toMatch(/Created temporary/);
+
+      const tempConfigs = require('fs')
+        .readdirSync(testDir)
+        .filter((f: string) => f.startsWith('.stencil-test-'));
+
+      if (tempConfigs.length > 0) {
+        const tempConfigContent = require('fs').readFileSync(join(testDir, tempConfigs[0]), 'utf-8');
+        // Should have default test file patterns (.spec. and .test.)
+        // The patterns are written as regex literals with escaped dots (e.g., /\.spec\.[jt]sx?$/)
+        expect(tempConfigContent).toContain('spec');
+        expect(tempConfigContent).toContain('test');
+        expect(tempConfigContent).toContain('[jt]sx');
+      }
+    });
+
+    it('should report both screenshot and test file pattern counts', async () => {
+      const stencilConfig = `
+export const config = {
+  namespace: 'test',
+  outputTargets: [{ type: 'dist' }]
+};
+`;
+      writeFileSync(join(testDir, 'stencil.config.ts'), stencilConfig);
+
+      const vitestConfig = `
+export default {
+  test: {
+    include: ['**/*.spec.ts']
+  }
+};
+`;
+      writeFileSync(join(testDir, 'vitest.config.ts'), vitestConfig);
+
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+
+      const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
+
+      // Should report both screenshot and test file pattern counts
+      expect(result.stdout).toMatch(/Added.*screenshot patterns and.*test file patterns/);
     });
   });
 
