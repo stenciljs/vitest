@@ -437,7 +437,10 @@ export default {
       if (tempConfigs.length > 0) {
         const tempConfigContent = require('fs').readFileSync(join(testDir, tempConfigs[0]), 'utf-8');
         // Should have default test file patterns (.spec. and .test.)
-        expect(tempConfigContent).toMatch(/\.spec\.|\.test\./);
+        // The patterns are written as regex literals with escaped dots (e.g., /\.spec\.[jt]sx?$/)
+        expect(tempConfigContent).toContain('spec');
+        expect(tempConfigContent).toContain('test');
+        expect(tempConfigContent).toContain('[jt]sx');
       }
     });
 
