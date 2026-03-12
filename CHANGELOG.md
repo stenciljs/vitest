@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/stenciljs/vitest/compare/v1.6.0...v1.6.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* stop test re-runs on *.map.js file change ([#28](https://github.com/stenciljs/vitest/issues/28)) ([3d81f5c](https://github.com/stenciljs/vitest/commit/3d81f5c3f070977c3b0352a8bbad234718998373))
+
 # [1.6.0](https://github.com/stenciljs/vitest/compare/v1.5.0...v1.6.0) (2026-03-12)
 
 
