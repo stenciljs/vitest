@@ -367,34 +367,115 @@ function handleStencilOutput(data: Buffer) {
 }
 
 /**
+ * Resolves the vitest config path from custom path or default locations
+ */
+function resolveVitestConfigPath(customVitestConfig?: string): string | undefined {
+  // Use custom config if provided via --config flag
+  if (customVitestConfig) {
+    const resolvedPath = join(cwd, customVitestConfig);
+    if (existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+    if (verbose) {
+      log(`Specified vitest config not found: ${customVitestConfig}, falling back to defaults`);
+    }
+  }
+
+  // Look for vitest.config.ts/js in common locations
+  const possibleConfigs = [
+    join(cwd, 'vitest.config.ts'),
+    join(cwd, 'vitest.config.js'),
+    join(cwd, 'vitest.config.mjs'),
+  ];
+
+  return possibleConfigs.find(existsSync);
+}
+
+/**
+ * Loads and parses the vitest config file
+ */
+async function loadVitestConfig(vitestConfigPath: string): Promise<any> {
+  const jiti = createJiti(cwd, { interopDefault: true });
+  const vitestConfig: any = await jiti.import(vitestConfigPath);
+  return vitestConfig?.default || vitestConfig;
+}
+
+/**
+ * Converts a glob pattern to a RegExp for use in watchIgnoredRegex
+ */
+function globToRegex(glob: string): RegExp {
+  // Escape special regex characters except glob wildcards
+  let pattern = glob
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&') // Escape regex special chars
+    .replace(/\*\*/g, '<<GLOBSTAR>>') // Placeholder for **
+    .replace(/\*/g, '[^/]*') // * matches anything except /
+    .replace(/<<GLOBSTAR>>/g, '.*') // ** matches anything including /
+    .replace(/\?/g, '.'); // ? matches single char
+
+  return new RegExp(pattern);
+}
+
+/**
+ * Extracts test file include patterns from vitest config to ignore in Stencil watch
+ */
+async function getTestFilePatternsFromVitestConfig(customVitestConfig?: string): Promise<RegExp[]> {
+  const defaultPatterns = [/\.spec\.[jt]sx?$/, /\.test\.[jt]sx?$/];
+
+  try {
+    const vitestConfigPath = resolveVitestConfigPath(customVitestConfig);
+
+    if (!vitestConfigPath) {
+      return defaultPatterns;
+    }
+
+    if (verbose) {
+      log(`Loading test file patterns from ${vitestConfigPath}`);
+    }
+
+    const configObj = await loadVitestConfig(vitestConfigPath);
+    const testConfig = configObj?.test || configObj;
+
+    // Extract include patterns from various possible locations
+    const includePatterns: string[] = [];
+
+    // Root level include
+    if (testConfig?.include) {
+      includePatterns.push(...(Array.isArray(testConfig.include) ? testConfig.include : [testConfig.include]));
+    }
+
+    // Check projects for include patterns
+    const projects = testConfig?.projects || [];
+    for (const project of projects) {
+      const projectTest = project?.test || project;
+      if (projectTest?.include) {
+        includePatterns.push(...(Array.isArray(projectTest.include) ? projectTest.include : [projectTest.include]));
+      }
+    }
+
+    // Convert glob patterns to RegExp
+    const patterns = includePatterns.map(globToRegex);
+
+    if (verbose && patterns.length > 0) {
+      log(`Extracted ${patterns.length} test file patterns from vitest config`);
+    }
+
+    return patterns.length > 0 ? patterns : defaultPatterns;
+  } catch (error) {
+    if (verbose) {
+      log(`Failed to parse vitest config for test patterns: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    return defaultPatterns;
+  }
+}
+
+/**
  * Extracts screenshot directory patterns from vitest config to ignore in Stencil watch
  */
 async function getScreenshotPatternsFromVitestConfig(customVitestConfig?: string): Promise<RegExp[]> {
   const patterns: RegExp[] = [];
 
   try {
-    let vitestConfigPath: string | undefined;
-
-    // Use custom config if provided via --config flag
-    if (customVitestConfig) {
-      const resolvedPath = join(cwd, customVitestConfig);
-      if (existsSync(resolvedPath)) {
-        vitestConfigPath = resolvedPath;
-      } else if (verbose) {
-        log(`Specified vitest config not found: ${customVitestConfig}, falling back to defaults`);
-      }
-    }
-
-    // Look for vitest.config.ts/js in common locations if no custom config
-    if (!vitestConfigPath) {
-      const possibleConfigs = [
-        join(cwd, 'vitest.config.ts'),
-        join(cwd, 'vitest.config.js'),
-        join(cwd, 'vitest.config.mjs'),
-      ];
-
-      vitestConfigPath = possibleConfigs.find(existsSync);
-    }
+    const vitestConfigPath = resolveVitestConfigPath(customVitestConfig);
 
     if (!vitestConfigPath) {
       if (verbose) {
@@ -408,9 +489,7 @@ async function getScreenshotPatternsFromVitestConfig(customVitestConfig?: string
       log(`Loading vitest config from ${vitestConfigPath}`);
     }
 
-    // Use jiti to load TypeScript/ESM config
-    const jiti = createJiti(cwd, { interopDefault: true });
-    const vitestConfig: any = await jiti.import(vitestConfigPath);
+    const vitestConfig = await loadVitestConfig(vitestConfigPath);
 
     // Extract screenshot directory from browser test config
     const projects = vitestConfig?.default?.test?.projects || vitestConfig?.test?.projects || [];
@@ -456,7 +535,7 @@ async function getScreenshotPatternsFromVitestConfig(customVitestConfig?: string
 
 /**
  * Creates a temporary stencil config that extends the user's config
- * and adds watchIgnoredRegex patterns for screenshots
+ * and adds watchIgnoredRegex patterns for screenshots and test files
  */
 async function createTemporaryStencilConfig(
   userSpecifiedConfig?: string,
@@ -494,8 +573,11 @@ async function createTemporaryStencilConfig(
       }
     }
 
-    // Get screenshot patterns to ignore
-    const screenshotPatterns = await getScreenshotPatternsFromVitestConfig(vitestConfigPath);
+    // Get patterns to ignore from vitest config
+    const [screenshotPatterns, testFilePatterns] = await Promise.all([
+      getScreenshotPatternsFromVitestConfig(vitestConfigPath),
+      getTestFilePatternsFromVitestConfig(vitestConfigPath),
+    ]);
 
     // Load the user's config using jiti
     const jiti = createJiti(cwd, { interopDefault: true });
@@ -507,7 +589,7 @@ async function createTemporaryStencilConfig(
     // Merge with watchIgnoredRegex
     const mergedConfig = {
       ...actualConfig,
-      watchIgnoredRegex: [...(actualConfig?.watchIgnoredRegex || []), ...screenshotPatterns],
+      watchIgnoredRegex: [...(actualConfig?.watchIgnoredRegex || []), ...screenshotPatterns, ...testFilePatterns],
     };
 
     // Create temp file as sibling of stencil.config so tsconfig.json can be found
@@ -543,7 +625,9 @@ async function createTemporaryStencilConfig(
 
     if (verbose) {
       log(`Created temporary stencil config at ${tempConfigPath}`);
-      log(`Added ${screenshotPatterns.length} watch ignore patterns`);
+      log(
+        `Added ${screenshotPatterns.length} screenshot patterns and ${testFilePatterns.length} test file patterns to watch ignore`,
+      );
     }
 
     return tempConfigPath;
@@ -630,7 +714,7 @@ process.on('SIGTERM', () => cleanup());
     if (tempStencilConfigPath) {
       stencilArgs.push('--config', tempStencilConfigPath);
       if (verbose) {
-        log('Using temporary config with screenshot ignore patterns');
+        log('Using temporary config with watch ignore patterns for screenshots and test files');
       }
     } else if (args.stencilConfig) {
       // If temp config creation failed but user specified a config, use it directly
