@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/stenciljs/vitest/compare/v1.6.1...v1.6.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* vitest only watch js files ([#29](https://github.com/stenciljs/vitest/issues/29)) ([a7de7e3](https://github.com/stenciljs/vitest/commit/a7de7e32c661dba4034c67e591bc722a0acb0408))
+
 ## [1.6.1](https://github.com/stenciljs/vitest/compare/v1.6.0...v1.6.1) (2026-03-12)
 
 
