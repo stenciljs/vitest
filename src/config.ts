@@ -185,6 +185,17 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
     result.server.watch = {};
   }
 
+  // Ignore source map files to prevent unnecessary test re-runs
+  // Stencil may touch .map files without changing content, triggering Vite's watcher
+  if (!result.server.watch.ignored) {
+    result.server.watch.ignored = [];
+  }
+  const ignoredArray = Array.isArray(result.server.watch.ignored)
+    ? result.server.watch.ignored
+    : [result.server.watch.ignored];
+  const mapIgnorePatterns = ['**/*.map', '**/*.map.js'];
+  result.server.watch.ignored = [...new Set([...ignoredArray, ...mapIgnorePatterns])];
+
   // Ensure test config exists
   if (!result.test) {
     result.test = {};
