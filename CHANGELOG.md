@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/stenciljs/vitest/compare/v1.5.0...v1.6.0) (2026-03-12)
+
+
+### Features
+
+* auto add test files to stencil watch-ignore ([#26](https://github.com/stenciljs/vitest/issues/26)) ([e3a60fb](https://github.com/stenciljs/vitest/commit/e3a60fbbf6287e23fff499aa97ef6c8908bb8df3))
+
 # [1.5.0](https://github.com/stenciljs/vitest/compare/v1.4.0...v1.5.0) (2026-03-11)
 
 
