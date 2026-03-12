@@ -193,7 +193,7 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
   const ignoredArray = Array.isArray(result.server.watch.ignored)
     ? result.server.watch.ignored
     : [result.server.watch.ignored];
-  const mapIgnorePatterns = ['**/*.map', '**/*.map.js'];
+  const mapIgnorePatterns = ['**/*.map', '**/*.map.js', '**/dist/**/*.d.ts'];
   result.server.watch.ignored = [...new Set([...ignoredArray, ...mapIgnorePatterns])];
 
   // Ensure test config exists
@@ -231,7 +231,7 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
   const existingTriggers = Array.isArray(result.test.forceRerunTriggers)
     ? result.test.forceRerunTriggers
     : [result.test.forceRerunTriggers];
-  const outputDirTriggers = outputDirs.map((dir) => `**/${dir}/**`);
+  const outputDirTriggers = outputDirs.map((dir) => `**/${dir}/**/*.js`);
   result.test.forceRerunTriggers = [...new Set([...existingTriggers, ...outputDirTriggers])];
 
   // Add globals if not set
