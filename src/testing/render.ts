@@ -68,11 +68,19 @@ export async function waitForStable(elementOrSelector: Element | string, timeout
       element = document.querySelector(elementOrSelector);
     }
 
-    // If we have an element, check if it has dimensions
+    // If we have an element, check if it has dimensions and is visible
     if (element) {
       const rect = element.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
-        return;
+        const style = window.getComputedStyle(element);
+        const isVisible =
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          style.visibility !== 'collapse' &&
+          parseFloat(style.opacity) > 0;
+        if (isVisible) {
+          return;
+        }
       }
     }
 
