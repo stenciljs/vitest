@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/stenciljs/vitest/compare/v1.7.0...v1.7.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* `waitForStable` to also check for visibility ([#31](https://github.com/stenciljs/vitest/issues/31)) ([5d723b7](https://github.com/stenciljs/vitest/commit/5d723b7be56bc0a311e8489d29b351d84ffb6ece))
+
 # [1.7.0](https://github.com/stenciljs/vitest/compare/v1.6.2...v1.7.0) (2026-03-13)
 
 
