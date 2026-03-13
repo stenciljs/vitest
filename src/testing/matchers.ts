@@ -271,7 +271,8 @@ function getTextContentWithShadow(element: HTMLElement | DocumentFragment | Shad
     const stencilElem = el as StencilNonShadowElement;
     const childNodes = stencilElem.__childNodes ?? el.childNodes;
     for (const node of Array.from(childNodes)) {
-      if (node.nodeType === 3) { // Text node
+      if (node.nodeType === 3) {
+        // Text node
         text += node.textContent || '';
       } else if (node.nodeType === 1) {
         const tag = (node as HTMLElement).tagName?.toLowerCase();
@@ -283,7 +284,8 @@ function getTextContentWithShadow(element: HTMLElement | DocumentFragment | Shad
   } else {
     // DocumentFragment or ShadowRoot - iterate child nodes directly
     for (const node of Array.from(element.childNodes)) {
-      if (node.nodeType === 3) { // Text node
+      if (node.nodeType === 3) {
+        // Text node
         text += node.textContent || '';
       } else if (node.nodeType === 1) {
         const tag = (node as HTMLElement).tagName?.toLowerCase();
