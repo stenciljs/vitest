@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/stenciljs/vitest/compare/v1.6.2...v1.7.0) (2026-03-13)
+
+
+### Features
+
+* `toHaveLightTextContent` & `toEqualLightText` ([#30](https://github.com/stenciljs/vitest/issues/30)) ([0b97093](https://github.com/stenciljs/vitest/commit/0b97093b27e681ddb378e14cd502df0ecb9167b7))
+
 ## [1.6.2](https://github.com/stenciljs/vitest/compare/v1.6.1...v1.6.2) (2026-03-12)
 
 
