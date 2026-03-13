@@ -26,10 +26,14 @@ interface CustomMatchers<R = unknown> {
   toEqualAttributes(expectedAttrs: Record<string, string>): R;
   /** Asserts element has the property, optionally with a specific value. */
   toHaveProperty(property: string, value?: any): R;
-  /** Asserts element's text content contains the specified text. */
+  /** Asserts element's text content (including shadow DOM) contains the specified text. */
   toHaveTextContent(text: string): R;
-  /** Asserts element's trimmed text content equals the expected text exactly. */
+  /** Asserts element's light DOM text content contains the specified text. */
+  toHaveLightTextContent(text: string): R;
+  /** Asserts element's trimmed text content (including shadow DOM) equals the expected text exactly. */
   toEqualText(expectedText: string): R;
+  /** Asserts element's trimmed light DOM text content (excluding shadow DOM) equals the expected text exactly. */
+  toEqualLightText(expectedText: string): R;
   /** Asserts element has an attached shadow root. */
   toHaveShadowRoot(): R;
   /** Asserts element's serialized HTML (including shadow DOM) matches expected HTML. */
@@ -243,10 +247,61 @@ function toHaveProperty(received: any, property: string, value?: any): { pass: b
 }
 
 /**
- * Check if element has text content
+ * Stencil non-shadow component with slot polyfill
+ */
+interface StencilNonShadowElement extends HTMLElement {
+  __childNodes?: NodeList;
+}
+
+/**
+ * Recursively get text content including shadow DOM and Stencil slot polyfill
+ */
+function getTextContentWithShadow(element: HTMLElement | DocumentFragment | ShadowRoot): string {
+  let text = '';
+
+  if ((element as any).nodeType === 1) {
+    const el = element as HTMLElement;
+
+    // Traverse shadow root first (real or Stencil polyfill)
+    if (el.shadowRoot) {
+      text += getTextContentWithShadow(el.shadowRoot);
+    }
+
+    // For Stencil non-shadow components with slot polyfill, use __childNodes
+    const stencilElem = el as StencilNonShadowElement;
+    const childNodes = stencilElem.__childNodes ?? el.childNodes;
+    for (const node of Array.from(childNodes)) {
+      if (node.nodeType === 3) { // Text node
+        text += node.textContent || '';
+      } else if (node.nodeType === 1) {
+        const tag = (node as HTMLElement).tagName?.toLowerCase();
+        if (tag !== 'style' && tag !== 'script') {
+          text += getTextContentWithShadow(node as HTMLElement);
+        }
+      }
+    }
+  } else {
+    // DocumentFragment or ShadowRoot - iterate child nodes directly
+    for (const node of Array.from(element.childNodes)) {
+      if (node.nodeType === 3) { // Text node
+        text += node.textContent || '';
+      } else if (node.nodeType === 1) {
+        const tag = (node as HTMLElement).tagName?.toLowerCase();
+        if (tag !== 'style' && tag !== 'script') {
+          text += getTextContentWithShadow(node as HTMLElement);
+        }
+      }
+    }
+  }
+
+  return text;
+}
+
+/**
+ * Check if element has text content (including shadow DOM)
  */
 function toHaveTextContent(received: HTMLElement, text: string): { pass: boolean; message: () => string } {
-  const actualText = received.textContent || '';
+  const actualText = getTextContentWithShadow(received);
   const pass = actualText.includes(text);
 
   return {
@@ -259,10 +314,26 @@ function toHaveTextContent(received: HTMLElement, text: string): { pass: boolean
 }
 
 /**
- * Check if element's text content exactly matches (after trimming)
+ * Check if element's light DOM has text content (excludes shadow DOM)
+ */
+function toHaveLightTextContent(received: HTMLElement, text: string): { pass: boolean; message: () => string } {
+  const actualText = received.textContent || '';
+  const pass = actualText.includes(text);
+
+  return {
+    pass,
+    message: () =>
+      pass
+        ? `Expected element light DOM not to have text content "${text}"`
+        : `Expected element light DOM to have text content "${text}", but got "${actualText}"`,
+  };
+}
+
+/**
+ * Check if element's text content exactly matches (after trimming), including shadow DOM
  */
 function toEqualText(received: HTMLElement, expectedText: string): { pass: boolean; message: () => string } {
-  const actualText = (received.textContent || '').trim();
+  const actualText = getTextContentWithShadow(received).trim();
   const trimmedExpected = expectedText.trim();
   const pass = actualText === trimmedExpected;
 
@@ -272,6 +343,23 @@ function toEqualText(received: HTMLElement, expectedText: string): { pass: boole
       pass
         ? `Expected element text not to equal "${trimmedExpected}"`
         : `Expected element text to equal "${trimmedExpected}", but got "${actualText}"`,
+  };
+}
+
+/**
+ * Check if element's light DOM text content exactly matches (after trimming), excludes shadow DOM
+ */
+function toEqualLightText(received: HTMLElement, expectedText: string): { pass: boolean; message: () => string } {
+  const actualText = (received.textContent || '').trim();
+  const trimmedExpected = expectedText.trim();
+  const pass = actualText === trimmedExpected;
+
+  return {
+    pass,
+    message: () =>
+      pass
+        ? `Expected element light DOM text not to equal "${trimmedExpected}"`
+        : `Expected element light DOM text to equal "${trimmedExpected}", but got "${actualText}"`,
   };
 }
 
@@ -591,7 +679,9 @@ function installMatchers() {
     toEqualAttributes,
     toHaveProperty,
     toHaveTextContent,
+    toHaveLightTextContent,
     toEqualText,
+    toEqualLightText,
     toHaveShadowRoot,
     toEqualHtml,
     toEqualLightHtml,
