@@ -166,8 +166,10 @@ expect(element).toHaveAttribute('aria-label', 'Close');
 expect(element).toEqualAttribute('type', 'button');
 expect(element).toEqualAttributes({ type: 'button', disabled: true });
 expect(element).toHaveProperty('value', 'test');
-expect(element).toHaveTextContent('Hello World');
-expect(element).toEqualText('Exact text match');
+expect(element).toHaveTextContent('Hello World'); // includes shadow DOM text
+expect(element).toHaveLightTextContent('Hello World'); // light DOM only
+expect(element).toEqualText('Exact text match'); // includes shadow DOM text
+expect(element).toEqualLightText('Exact text match'); // light DOM only
 
 // Shadow DOM
 expect(element).toHaveShadowRoot();

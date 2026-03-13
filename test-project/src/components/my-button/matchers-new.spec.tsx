@@ -8,6 +8,7 @@
  * - toEqualAttributes
  * - toHaveProperty
  * - toHaveTextContent
+ * - toHaveLightTextContent
  * - toEqualText
  * - toHaveShadowRoot
  */
@@ -203,28 +204,77 @@ describe('my-button - matchers', () => {
   });
 
   describe('toHaveTextContent', () => {
-    it('should pass when element contains the text', async () => {
-      const { root } = await render(<my-button>Click Me Please</my-button>);
+    describe('light DOM text (no shadow traversal needed)', () => {
+      it('should pass when element contains the text', async () => {
+        const { root } = await render(<my-button>Click Me Please</my-button>);
 
-      expect(root).toHaveTextContent('Click');
-      expect(root).toHaveTextContent('Me');
-      expect(root).toHaveTextContent('Please');
-      expect(root).toHaveTextContent('Click Me Please');
+        expect(root).toHaveTextContent('Click');
+        expect(root).toHaveTextContent('Me');
+        expect(root).toHaveTextContent('Please');
+        expect(root).toHaveTextContent('Click Me Please');
+      });
+
+      it('should fail when element does not contain the text', async () => {
+        const { root } = await render(<my-button>Click Me</my-button>);
+
+        expect(() => {
+          expect(root).toHaveTextContent('Submit');
+        }).toThrow();
+      });
+
+      it('should support negation with .not', async () => {
+        const { root } = await render(<my-button>Click Me</my-button>);
+
+        expect(root).not.toHaveTextContent('Submit');
+        expect(root).not.toHaveTextContent('Cancel');
+      });
     });
 
-    it('should fail when element does not contain the text', async () => {
-      const { root } = await render(<my-button>Click Me</my-button>);
+    describe('shadow DOM text traversal (shadow: true)', () => {
+      it('should find text that lives inside the shadow root', async () => {
+        // cardTitle renders as <h3> inside the shadow root — not in light DOM
+        const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
+
+        expect(root).toHaveTextContent('Shadow Title');
+      });
+
+      it('should find both shadow root text and slotted light DOM text', async () => {
+        const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
+
+        expect(root).toHaveTextContent('Shadow Title');
+        expect(root).toHaveTextContent('Slotted Content');
+      });
+
+      it('should fail when text is not present anywhere', async () => {
+        const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
+
+        expect(() => {
+          expect(root).toHaveTextContent('Missing Text');
+        }).toThrow();
+      });
+    });
+  });
+
+  describe('toHaveLightTextContent', () => {
+    it('should find text in the light DOM', async () => {
+      const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
+
+      expect(root).toHaveLightTextContent('Slotted Content');
+    });
+
+    it('should NOT find text that is only in the shadow root', async () => {
+      // cardTitle is rendered inside the shadow DOM — light DOM traversal should not see it
+      const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
+
+      expect(root).not.toHaveLightTextContent('Shadow Title');
+    });
+
+    it('should fail when light DOM does not contain the text', async () => {
+      const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
 
       expect(() => {
-        expect(root).toHaveTextContent('Submit');
+        expect(root).toHaveLightTextContent('Shadow Title');
       }).toThrow();
-    });
-
-    it('should support negation with .not', async () => {
-      const { root } = await render(<my-button>Click Me</my-button>);
-
-      expect(root).not.toHaveTextContent('Submit');
-      expect(root).not.toHaveTextContent('Cancel');
     });
   });
 
@@ -246,6 +296,42 @@ describe('my-button - matchers', () => {
 
       expect(() => {
         expect(root).toEqualText('Different Text');
+      }).toThrow();
+    });
+
+    it('should match text that lives inside the shadow root', async () => {
+      // cardTitle renders as <h3> inside the shadow root — toEqualText should see it
+      const { root } = await render(<my-card cardTitle="Only Title" />);
+
+      expect(root).toEqualText('Only Title');
+    });
+  });
+
+  describe('toEqualLightText', () => {
+    it('should match light DOM text exactly (trimmed)', async () => {
+      const { root } = await render(<my-button>Click Me</my-button>);
+
+      expect(root).toEqualLightText('Click Me');
+    });
+
+    it('should NOT match text that is only in the shadow root', async () => {
+      // cardTitle renders inside the shadow DOM — light text will be empty
+      const { root } = await render(<my-card cardTitle="Shadow Title" />);
+
+      expect(root).not.toEqualLightText('Shadow Title');
+    });
+
+    it('should match the slotted light DOM text, not the shadow title', async () => {
+      const { root } = await render(<my-card cardTitle="Shadow Title">Slotted</my-card>);
+
+      expect(root).toEqualLightText('Slotted');
+    });
+
+    it('should fail when light DOM text does not match', async () => {
+      const { root } = await render(<my-card cardTitle="Shadow Title">Slotted</my-card>);
+
+      expect(() => {
+        expect(root).toEqualLightText('Shadow Title');
       }).toThrow();
     });
   });

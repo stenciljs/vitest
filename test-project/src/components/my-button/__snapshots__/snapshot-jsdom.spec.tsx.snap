@@ -1,0 +1,44 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`my-button - snapshot tests (jsdom) > should match snapshot for card with nested button 1`] = `
+<my-card class="hydrated">
+  <mock:shadow-root>
+    <div class="card card--elevation-1">
+      <div class="card__header">
+        <h3 class="card__title">
+          Test Card
+        </h3>
+        <slot name="header-actions"></slot>
+      </div>
+      <div class="card__content">
+        <slot></slot>
+      </div>
+      <div class="card__footer">
+        <slot name="footer"></slot>
+      </div>
+    </div>
+  </mock:shadow-root>
+  <p>
+    Card content
+  </p>
+  <my-button slot="footer" class="hydrated">
+    <mock:shadow-root>
+      <button class="button button--primary button--medium" type="button">
+        <slot></slot>
+      </button>
+    </mock:shadow-root>
+    Action
+  </my-button>
+</my-card>
+`;
+
+exports[`my-button - snapshot tests (jsdom) > should match snapshot for primary button 1`] = `
+<my-button class="hydrated">
+  <mock:shadow-root>
+    <button class="button button--primary button--medium" type="button">
+      <slot></slot>
+    </button>
+  </mock:shadow-root>
+  Click me
+</my-button>
+`;
