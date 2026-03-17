@@ -586,10 +586,20 @@ async function createTemporaryStencilConfig(
     // Extract the actual config object
     const actualConfig = userConfig.config || userConfig.default?.config || userConfig.default || userConfig;
 
+    // Patterns for Stencil-generated files that shouldn't trigger rebuilds
+    const stencilGeneratedPatterns = [
+      /readme\.md$/i, // Stencil generates readme.md files in --prod mode
+    ];
+
     // Merge with watchIgnoredRegex
     const mergedConfig = {
       ...actualConfig,
-      watchIgnoredRegex: [...(actualConfig?.watchIgnoredRegex || []), ...screenshotPatterns, ...testFilePatterns],
+      watchIgnoredRegex: [
+        ...(actualConfig?.watchIgnoredRegex || []),
+        ...screenshotPatterns,
+        ...testFilePatterns,
+        ...stencilGeneratedPatterns,
+      ],
     };
 
     // Create temp file as sibling of stencil.config so tsconfig.json can be found
@@ -626,7 +636,7 @@ async function createTemporaryStencilConfig(
     if (verbose) {
       log(`Created temporary stencil config at ${tempConfigPath}`);
       log(
-        `Added ${screenshotPatterns.length} screenshot patterns and ${testFilePatterns.length} test file patterns to watch ignore`,
+        `Added ${screenshotPatterns.length} screenshot, ${testFilePatterns.length} test file, and ${stencilGeneratedPatterns.length} generated file patterns to watch ignore`,
       );
     }
 
