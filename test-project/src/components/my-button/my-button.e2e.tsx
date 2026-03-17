@@ -11,6 +11,10 @@ describe('my-button - browser tests', () => {
     it('should render button in DOM', async () => {
       const { root } = await render(<my-button>Click me</my-button>);
 
+      if (__STENCIL_PROD__) {
+        console.log('Running in production mode!');
+      }
+
       expect(root).toBeTruthy();
       expect(root.textContent).toBe('Click me');
     });
