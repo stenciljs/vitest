@@ -43,6 +43,9 @@
     "./environments/stencil": {
       "types": "./dist/environments/stencil.d.ts",
       "import": "./dist/environments/stencil.js"
+    },
+    "./globals": {
+      "types": "./dist/globals.d.ts"
     }
   },
   "files": [
@@ -59,7 +62,7 @@
     "component testing"
   ],
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.bin.json",
+    "build": "tsc && tsc -p tsconfig.bin.json && cp src/globals.d.ts dist/globals.d.ts",
     "dev": "tsc --watch",
     "test:e2e": "pnpm --filter test-project test",
     "test:unit": "vitest run",

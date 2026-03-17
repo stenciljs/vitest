@@ -143,6 +143,24 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
   // Start with the user's config
   const result = { ...config };
 
+  // Expose STENCIL_* env vars to all test environments
+  // These are set by the stencil-test CLI when spawning vitest
+  const stencilEnvDefines = {
+    __STENCIL_PROD__: JSON.stringify(process.env.STENCIL_PROD === 'true'),
+    __STENCIL_SERVE__: JSON.stringify(process.env.STENCIL_SERVE === 'true'),
+    __STENCIL_PORT__: JSON.stringify(process.env.STENCIL_PORT || ''),
+  };
+
+  if (!result.define) {
+    result.define = stencilEnvDefines;
+  } else {
+    // Merge with existing defines, user's defines take precedence
+    result.define = {
+      ...stencilEnvDefines,
+      ...result.define,
+    };
+  }
+
   // Add esbuild JSX config if not present
   if (!result.esbuild) {
     result.esbuild = {
@@ -346,6 +364,23 @@ function enhanceTestConfig(testConfig: any, stencilConfig?: StencilConfig): any 
  */
 function enhanceProject(project: any, stencilConfig?: StencilConfig): any {
   const enhanced = { ...project };
+
+  // Expose STENCIL_* env vars at the project level for browser tests
+  // This ensures the defines are available in all project types
+  const stencilEnvDefines = {
+    __STENCIL_PROD__: JSON.stringify(process.env.STENCIL_PROD === 'true'),
+    __STENCIL_SERVE__: JSON.stringify(process.env.STENCIL_SERVE === 'true'),
+    __STENCIL_PORT__: JSON.stringify(process.env.STENCIL_PORT || ''),
+  };
+
+  if (!enhanced.define) {
+    enhanced.define = stencilEnvDefines;
+  } else {
+    enhanced.define = {
+      ...stencilEnvDefines,
+      ...enhanced.define,
+    };
+  }
 
   // Get output directories from Stencil config
   const outputDirs = getStencilOutputDirs(stencilConfig);

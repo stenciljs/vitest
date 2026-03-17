@@ -298,6 +298,10 @@ function runTests() {
     env: {
       ...process.env,
       NODE_ENV: 'test',
+      // Expose CLI flags to tests via environment variables
+      STENCIL_PROD: args.prod ? 'true' : '',
+      STENCIL_SERVE: args.serve ? 'true' : '',
+      STENCIL_PORT: args.port || '',
     },
   });
 

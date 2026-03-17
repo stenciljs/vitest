@@ -357,6 +357,38 @@ The `stencil-test` CLI supports most of Stencil's CLI options and all of Vitest 
 - For full Stencil CLI options, see [Stencil CLI docs](https://stenciljs.com/docs/cli).
 - For full Vitest CLI options, see [Vitest CLI docs](https://vitest.dev/guide/cli.html).
 
+### Global Variables
+
+The `stencil-test` CLI exposes global variables that can be accessed in your tests to check which CLI flags were used:
+
+| Global | Type | Description |
+|--------|------|-------------|
+| `__STENCIL_PROD__` | `boolean` | `true` when `--prod` flag is passed |
+| `__STENCIL_SERVE__` | `boolean` | `true` when `--serve` flag is passed |
+| `__STENCIL_PORT__` | `string` | Port number when `--port` is specified |
+
+```tsx
+if (__STENCIL_PROD__) {
+  console.log('Running tests against production build');
+}
+
+if (__STENCIL_SERVE__) {
+  const baseUrl = `http://localhost:${__STENCIL_PORT__ || '3333'}`;
+}
+```
+
+#### TypeScript Support
+
+Add to your `tsconfig.json` for type definitions:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["@stencil/vitest/globals"]
+  }
+}
+```
+
 ## License
 
 MIT
