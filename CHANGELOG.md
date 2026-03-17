@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/stenciljs/vitest/compare/v1.7.2...v1.8.0) (2026-03-17)
+
+
+### Features
+
+* add cli flags as global variables ([#33](https://github.com/stenciljs/vitest/issues/33)) ([704ea9d](https://github.com/stenciljs/vitest/commit/704ea9d4f5ad795b8b1145bd829a0642d68436d8))
+
 ## [1.7.2](https://github.com/stenciljs/vitest/compare/v1.7.1...v1.7.2) (2026-03-17)
 
 
