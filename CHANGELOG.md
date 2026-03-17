@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/stenciljs/vitest/compare/v1.7.1...v1.7.2) (2026-03-17)
+
+
+### Bug Fixes
+
+* ignore `readme.md` files for `--watch` combined with `--prod` ([#32](https://github.com/stenciljs/vitest/issues/32)) ([27387e0](https://github.com/stenciljs/vitest/commit/27387e02449d083b350f4c87a6be72170275f7bf))
+
 ## [1.7.1](https://github.com/stenciljs/vitest/compare/v1.7.0...v1.7.1) (2026-03-13)
 
 
