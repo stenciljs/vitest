@@ -361,11 +361,11 @@ The `stencil-test` CLI supports most of Stencil's CLI options and all of Vitest 
 
 The `stencil-test` CLI exposes global variables that can be accessed in your tests to check which CLI flags were used:
 
-| Global | Type | Description |
-|--------|------|-------------|
-| `__STENCIL_PROD__` | `boolean` | `true` when `--prod` flag is passed |
-| `__STENCIL_SERVE__` | `boolean` | `true` when `--serve` flag is passed |
-| `__STENCIL_PORT__` | `string` | Port number when `--port` is specified |
+| Global              | Type      | Description                            |
+| ------------------- | --------- | -------------------------------------- |
+| `__STENCIL_PROD__`  | `boolean` | `true` when `--prod` flag is passed    |
+| `__STENCIL_SERVE__` | `boolean` | `true` when `--serve` flag is passed   |
+| `__STENCIL_PORT__`  | `string`  | Port number when `--port` is specified |
 
 ```tsx
 if (__STENCIL_PROD__) {
