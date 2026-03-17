@@ -260,8 +260,8 @@ export default {
 
       const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
 
-      // Should add watch ignore patterns (screenshot and test file patterns)
-      expect(result.stdout).toMatch(/Added.*screenshot patterns and.*test file patterns/);
+      // Should add watch ignore patterns (screenshot, test file, and generated file patterns)
+      expect(result.stdout).toMatch(/Added.*screenshot.*test file.*generated file patterns/);
     });
 
     it('should merge user watchIgnoredRegex with screenshot patterns', async () => {
@@ -466,8 +466,8 @@ export default {
 
       const result = await runCLIInDir(testDir, ['--watch', '--verbose'], 2000);
 
-      // Should report both screenshot and test file pattern counts
-      expect(result.stdout).toMatch(/Added.*screenshot patterns and.*test file patterns/);
+      // Should report screenshot, test file, and generated file pattern counts
+      expect(result.stdout).toMatch(/Added.*screenshot.*test file.*generated file patterns/);
     });
   });
 
