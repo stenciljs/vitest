@@ -63,14 +63,19 @@ export default <Environment>{
     // Setup the environment and get the window
     const { window: win, teardown: envTeardown } = await environment(global, options);
 
-    // Stub MessageEvent on global before populateGlobal to prevent Node's undici from loading
-    // This prevents "Class extends value undefined" errors from undici's WebSocket implementation
-    if (!global.MessageEvent && (win as any).MessageEvent) {
-      Object.defineProperty(global, 'MessageEvent', {
-        value: (win as any).MessageEvent,
-        writable: true,
-        configurable: true,
-      });
+    // Stub globals on global before populateGlobal to prevent Node's undici from loading.
+    // When populateGlobal accesses these globals, Node lazily loads them from undici,
+    // which has a bug in Node 20.x where WebSocket extends undefined EventTarget.
+    // By pre-stubbing these with the window's versions, we prevent the undici load.
+    const globalsToStub = ['MessageEvent', 'FormData', 'Headers', 'Request', 'Response', 'WebSocket'];
+    for (const key of globalsToStub) {
+      if (!(global as any)[key] && (win as any)[key]) {
+        Object.defineProperty(global, key, {
+          value: (win as any)[key],
+          writable: true,
+          configurable: true,
+        });
+      }
     }
 
     // Set NODE_ENV to test if not already set
