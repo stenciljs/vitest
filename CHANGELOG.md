@@ -1,3 +1,10 @@
+## [1.8.3](https://github.com/stenciljs/vitest/compare/v1.8.2...v1.8.3) (2026-03-19)
+
+
+### Bug Fixes
+
+* stencil env for node-20 ([#36](https://github.com/stenciljs/vitest/issues/36)) ([4be04c7](https://github.com/stenciljs/vitest/commit/4be04c7b1d7c5f5f8d6b6e7cb6078700362de4d2))
+
 ## [1.8.2](https://github.com/stenciljs/vitest/compare/v1.8.1...v1.8.2) (2026-03-19)
 
 
