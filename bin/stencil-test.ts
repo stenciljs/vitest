@@ -55,6 +55,7 @@ interface ParsedArgs {
   verbose: boolean;
   debug: boolean;
   prod: boolean;
+  build: boolean;
 
   // Vitest flags
   project?: string[];
@@ -78,6 +79,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     verbose: false,
     debug: false,
     prod: false,
+    build: false,
     coverage: false,
     noCoverage: false,
     ui: false,
@@ -132,6 +134,43 @@ function parseArgs(argv: string[]): ParsedArgs {
 
       case '--prod':
         parsed.prod = true;
+        i++;
+        break;
+
+      case '--build':
+        parsed.build = true;
+        i++;
+        break;
+
+      // Handle --no-<flag> variants of Stencil boolean flags
+      // Stencil dynamically supports negating any boolean flag with the no- prefix
+      case '--no-watch':
+        parsed.watch = false;
+        i++;
+        break;
+
+      case '--no-serve':
+        parsed.serve = false;
+        i++;
+        break;
+
+      case '--no-verbose':
+        parsed.verbose = false;
+        i++;
+        break;
+
+      case '--no-debug':
+        parsed.debug = false;
+        i++;
+        break;
+
+      case '--no-prod':
+        parsed.prod = false;
+        i++;
+        break;
+
+      case '--no-build':
+        parsed.build = false;
         i++;
         break;
 
