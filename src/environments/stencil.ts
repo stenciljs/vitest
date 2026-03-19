@@ -1,6 +1,16 @@
 import type { Environment } from 'vitest/environments';
-import { populateGlobal } from 'vitest/environments';
 import type { EnvironmentStencil } from './types.js';
+
+// Dynamically import populateGlobal to support both vitest 4.1+ (vitest/runtime) and older versions (vitest/environments)
+async function getPopulateGlobal() {
+  try {
+    // Use variable to prevent Vite's static import analysis from failing on older vitest
+    const runtimePath = 'vitest/' + 'runtime';
+    return (await import(/* @vite-ignore */ runtimePath)).populateGlobal;
+  } catch {
+    return (await import('vitest/environments')).populateGlobal;
+  }
+}
 import happyDom from './env/happy-dom.js';
 import jsdom from './env/jsdom.js';
 import mockDoc from './env/mock-doc.js';
@@ -72,6 +82,7 @@ export default <Environment>{
     }
 
     // Populate global with window properties
+    const populateGlobal = await getPopulateGlobal();
     const { keys, originals } = populateGlobal(global, win, {
       bindFunctions: true,
     });

@@ -127,7 +127,7 @@
     "@types/node": "24.10.4",
     "@typescript-eslint/eslint-plugin": "^8.50.0",
     "@typescript-eslint/parser": "^8.50.0",
-    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9.39.2",
     "installed-check": "^9.3.0",
     "knip": "^5.76.3",
@@ -135,7 +135,7 @@
     "prettier": "^3.7.4",
     "semantic-release": "^25.0.2",
     "typescript": "~5.8.3",
-    "vitest": "^4.0.0"
+    "vitest": "^4.1.0"
   },
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || >=24.0.0"

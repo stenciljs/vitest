@@ -161,8 +161,19 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
     };
   }
 
-  // Add esbuild JSX config if not present
-  if (!result.esbuild) {
+  // Add JSX config for the active transformer
+  // Vite 7+ uses oxc by default, older versions use esbuild
+  if ((result as any).oxc) {
+    // oxc is explicitly configured - set JSX options on it
+    if (!(result as any).oxc.jsx) {
+      (result as any).oxc.jsx = {
+        runtime: 'classic',
+        pragma: 'h',
+        pragmaFrag: 'Fragment',
+      };
+    }
+  } else if (!result.esbuild) {
+    // No oxc config, set esbuild JSX options (for older Vite versions)
     result.esbuild = {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
