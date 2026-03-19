@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/stenciljs/vitest/compare/v1.8.0...v1.8.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* update to make work with vitest 4.1 without warnings ([#34](https://github.com/stenciljs/vitest/issues/34)) ([0a1aa89](https://github.com/stenciljs/vitest/commit/0a1aa89cee190474cf341aef7ef2997f96fe4be5))
+
 # [1.8.0](https://github.com/stenciljs/vitest/compare/v1.7.2...v1.8.0) (2026-03-17)
 
 
