@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/stenciljs/vitest/compare/v1.8.1...v1.8.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* pass `--no-build` to stencil, not vite ([#35](https://github.com/stenciljs/vitest/issues/35)) ([9134a4f](https://github.com/stenciljs/vitest/commit/9134a4f7161f8ce6e13d321c2c513de20a728947))
+
 ## [1.8.1](https://github.com/stenciljs/vitest/compare/v1.8.0...v1.8.1) (2026-03-19)
 
 
