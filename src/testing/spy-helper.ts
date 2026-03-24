@@ -23,6 +23,17 @@ export interface SpyConfig {
 }
 
 /**
+ * A mock with access to the original implementation
+ */
+export interface MockWithOriginal extends Mock {
+  /**
+   * The original method implementation, bound to the component instance.
+   * Call this within mockImplementation to augment rather than replace.
+   */
+  original?: (...args: any[]) => any;
+}
+
+/**
  * Container for all spies on a component instance
  */
 export interface ComponentSpies {
@@ -31,9 +42,10 @@ export interface ComponentSpies {
    */
   methods: Record<string, Mock>;
   /**
-   * Mocks on component methods (pure stubs, doesn't call original)
+   * Mocks on component methods (pure stubs, doesn't call original).
+   * Each mock has an `original` property to access the original implementation.
    */
-  mocks: Record<string, Mock>;
+  mocks: Record<string, MockWithOriginal>;
   /**
    * Spies on property setters
    */
@@ -99,11 +111,16 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
     }
   }
 
-  // Mock methods (pure stub, no call-through)
+  // Mock methods (pure stub, no call-through by default, but original is accessible)
   if (config.mocks) {
     for (const methodName of config.mocks) {
-      const spy = vi.fn() as Mock & { __isSpy?: boolean };
+      const original = target[methodName];
+      const spy = vi.fn() as MockWithOriginal & { __isSpy?: boolean };
       spy.__isSpy = true;
+      // Store the original so users can call it if they want to augment rather than replace
+      if (typeof original === 'function') {
+        spy.original = (...args: any[]) => original.apply(target, args);
+      }
       spies.mocks[methodName] = spy;
 
       Object.defineProperty(target, methodName, {
@@ -171,11 +188,7 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
 }
 
 // Patch customElements.define to intercept component registration
-customElements.define = function (
-  name: string,
-  ctor: CustomElementConstructor,
-  options?: ElementDefinitionOptions,
-) {
+customElements.define = function (name: string, ctor: CustomElementConstructor, options?: ElementDefinitionOptions) {
   const lc = name.toLowerCase();
   const OrigCtor = ctor;
 
@@ -205,8 +218,10 @@ customElements.define = function (
           }
         });
       } else if (hostRef) {
-        // Fallback: Store for lazy application
-        pendingSpies.set(this as unknown as HTMLElement, { instance: hostRef.$lazyInstance$ || this, config: configToUse });
+        // Custom-elements output with Stencil runtime: element IS the instance
+        // Apply spies immediately since there's no lazy loading
+        const spies = applySpies(this, configToUse);
+        elementSpies.set(this as unknown as HTMLElement, spies);
       } else {
         // Custom-elements output path: element IS the instance
         const spies = applySpies(this, configToUse);
@@ -308,10 +323,7 @@ export function clearComponentSpies(tagName?: string): void {
  * mockImplementation(spies.methods.fetchData, async () => ({ data: 'mocked' }));
  * ```
  */
-export function mockImplementation<T extends (...args: any[]) => any>(
-  spy: Mock,
-  implementation: T
-): void {
+export function mockImplementation<T extends (...args: any[]) => any>(spy: Mock, implementation: T): void {
   spy.mockImplementation(implementation);
 }
 

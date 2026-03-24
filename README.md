@@ -177,6 +177,120 @@ await expect(element).toEqualHtml('<div>Expected HTML</div>');
 await expect(element).toEqualLightHtml('<div>Light DOM only</div>');
 ```
 
+### Spying and Mocking
+
+Spy on component methods, props, and lifecycle hooks to verify behaviour without modifying your component code.
+
+#### Method Spying
+
+Spy on methods while still calling the original implementation:
+
+```tsx
+const { root, spies } = await render(<my-button>Click me</my-button>, {
+  spyOn: {
+    methods: ['handleClick'],
+  },
+});
+
+// Trigger the method
+root.shadowRoot?.querySelector('button')?.click();
+
+// Assert the method was called
+expect(spies?.methods.handleClick).toHaveBeenCalledTimes(1);
+expect(spies?.methods.handleClick).toHaveBeenCalledWith(expect.objectContaining({ type: 'click' }));
+
+// Reset call history
+spies?.methods.handleClick.mockClear();
+```
+
+#### Method Mocking
+
+Replace methods with stubs that don't call the original implementation. Useful for stubbing API calls or other side effects:
+
+```tsx
+// Mock a data fetching method to return test data
+const { root, spies, waitForChanges } = await render(<user-profile userId="123" />, {
+  spyOn: {
+    mocks: ['fetchUserData'], // Pure stub - no real API call
+  },
+});
+
+// Return stubbed data instead of hitting the API
+spies?.mocks.fetchUserData.mockResolvedValue({
+  id: '123',
+  name: 'Test User',
+  email: 'test@example.com',
+});
+
+// Trigger the fetch
+root.loadUser();
+await waitForChanges();
+
+// Verify the mock was called with correct args
+expect(spies?.mocks.fetchUserData).toHaveBeenCalledWith('123');
+
+// Component should render with stubbed data
+expect(root.shadowRoot?.querySelector('.name')?.textContent).toBe('Test User');
+```
+
+You can also access the original implementation to augment rather than fully replace:
+
+```tsx
+const { spies } = await render(<my-component />, {
+  spyOn: { mocks: ['fetchData'] },
+});
+
+// Wrap the original to add logging or modify behaviour
+spies?.mocks.fetchData.mockImplementation(async (...args) => {
+  console.log('Fetching data with args:', args);
+  const result = await spies?.mocks.fetchData.original?.(...args);
+  console.log('Got result:', result);
+  return result;
+});
+```
+
+#### Prop Spying
+
+Track when props are changed:
+
+```tsx
+const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+  spyOn: {
+    props: ['variant', 'disabled'],
+  },
+});
+
+await setProps({ variant: 'danger' });
+await waitForChanges();
+
+expect(spies?.props.variant).toHaveBeenCalledWith('danger');
+expect(spies?.props.variant).toHaveBeenCalledTimes(1);
+```
+
+#### Lifecycle Spying
+
+Spy on lifecycle methods. Methods that don't exist on the component are auto-stubbed:
+
+```tsx
+const { spies, setProps, waitForChanges } = await render(<my-button>Click me</my-button>, {
+  spyOn: {
+    lifecycle: ['componentWillLoad', 'componentDidLoad', 'componentWillRender', 'componentDidRender'],
+  },
+});
+
+// Lifecycle methods are called during initial render
+expect(spies?.lifecycle.componentWillLoad).toHaveBeenCalledTimes(1);
+expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(1);
+
+// Trigger a re-render
+await setProps({ variant: 'danger' });
+await waitForChanges();
+
+// Re-render lifecycle methods called again
+expect(spies?.lifecycle.componentWillRender).toHaveBeenCalledTimes(2);
+expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(2);
+```
+
 ### Event Testing
 
 Test custom events emitted by your components:

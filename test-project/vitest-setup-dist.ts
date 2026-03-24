@@ -5,5 +5,4 @@ beforeAll(async () => {
   await import('./dist/test-components/test-components.esm.js');
 });
 
-
 export {};

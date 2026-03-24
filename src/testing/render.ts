@@ -149,11 +149,6 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     await stencilRender(template, container);
   }
 
-  // Clear per-render spy config after element creation
-  if (options.spyOn) {
-    setRenderSpyConfig(null);
-  }
-
   // Get the rendered element
   const element = container.firstElementChild as T;
 
@@ -161,9 +156,20 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     throw new Error('Failed to render component');
   }
 
+  // Wait for custom element to be defined (needed for MutationObserver-based loaders)
+  const tagName = element.tagName.toLowerCase();
+  if (tagName.includes('-')) {
+    await customElements.whenDefined(tagName);
+  }
+
   // Wait for component to be ready
   if (typeof (element as any).componentOnReady === 'function') {
     await (element as any).componentOnReady();
+  }
+
+  // Clear per-render spy config AFTER component is fully ready
+  if (options.spyOn) {
+    setRenderSpyConfig(null);
   }
 
   // Define waitForChanges first so we can use it in the ready check

@@ -1,4 +1,4 @@
-import { describe, it, expect, h } from '@stencil/vitest';
+import { describe, it, expect, h, waitForExist } from '@stencil/vitest';
 import { render } from '@stencil/vitest';
 
 const spyConfig = {
@@ -7,10 +7,10 @@ const spyConfig = {
 };
 
 describe('spy-helper', () => {
-
   describe('method spying', () => {
     it('spies on component methods', async () => {
       const { root, spies } = await render(<my-button>Click me</my-button>, { spyOn: spyConfig });
+      await waitForExist('my-button.hydrated');
 
       expect(spies).toBeDefined();
       expect(spies?.methods.handleClick).toBeDefined();
@@ -39,9 +39,7 @@ describe('spy-helper', () => {
       button?.click();
 
       // handleClick receives the MouseEvent
-      expect(spies?.methods.handleClick).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'click' })
-      );
+      expect(spies?.methods.handleClick).toHaveBeenCalledWith(expect.objectContaining({ type: 'click' }));
     });
 
     it('can reset method spy call history', async () => {
@@ -65,7 +63,9 @@ describe('spy-helper', () => {
 
   describe('prop spying', () => {
     it('spies on prop setters', async () => {
-      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, { spyOn: spyConfig });
+      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+        spyOn: spyConfig,
+      });
 
       expect(spies).toBeDefined();
       expect(spies?.props.variant).toBeDefined();
@@ -77,7 +77,9 @@ describe('spy-helper', () => {
     });
 
     it('tracks multiple prop changes', async () => {
-      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, { spyOn: spyConfig });
+      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+        spyOn: spyConfig,
+      });
 
       await setProps({ variant: 'secondary' });
       await waitForChanges();
@@ -90,7 +92,9 @@ describe('spy-helper', () => {
     });
 
     it('can reset prop spy call history', async () => {
-      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, { spyOn: spyConfig });
+      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+        spyOn: spyConfig,
+      });
 
       await setProps({ variant: 'danger' });
       await waitForChanges();
@@ -107,7 +111,12 @@ describe('spy-helper', () => {
     });
 
     it('spies on multiple props independently', async () => {
-      const { spies, setProps, waitForChanges } = await render(<my-button variant="primary" disabled={false}>Click me</my-button>, { spyOn: spyConfig });
+      const { spies, setProps, waitForChanges } = await render(
+        <my-button variant="primary" disabled={false}>
+          Click me
+        </my-button>,
+        { spyOn: spyConfig },
+      );
 
       await setProps({ variant: 'danger', disabled: true });
       await waitForChanges();
@@ -159,7 +168,7 @@ describe('spy-helper', () => {
     it('auto-stubs undefined lifecycle methods', async () => {
       // my-button has no componentWillLoad defined, but we can still spy on it
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { lifecycle: ['componentWillLoad'] }
+        spyOn: { lifecycle: ['componentWillLoad'] },
       });
 
       expect(spies?.lifecycle.componentWillLoad).toBeDefined();
@@ -169,7 +178,7 @@ describe('spy-helper', () => {
 
     it('tracks multiple lifecycle methods', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { lifecycle: ['componentWillLoad', 'componentDidLoad', 'componentWillRender', 'componentDidRender'] }
+        spyOn: { lifecycle: ['componentWillLoad', 'componentDidLoad', 'componentWillRender', 'componentDidRender'] },
       });
 
       // All should be defined and called during initial render
@@ -181,7 +190,7 @@ describe('spy-helper', () => {
 
     it('tracks re-render lifecycle methods on prop change', async () => {
       const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
-        spyOn: { lifecycle: ['componentWillRender', 'componentDidRender'] }
+        spyOn: { lifecycle: ['componentWillRender', 'componentDidRender'] },
       });
 
       // Initial render
@@ -201,7 +210,7 @@ describe('spy-helper', () => {
   describe('method mocking', () => {
     it('mocks replace method without calling original', async () => {
       const { root, spies, spyOnEvent } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] }
+        spyOn: { mocks: ['handleClick'] },
       });
       const buttonClickSpy = spyOnEvent('buttonClick');
 
@@ -218,7 +227,7 @@ describe('spy-helper', () => {
 
     it('mocks can have custom return values', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] }
+        spyOn: { mocks: ['handleClick'] },
       });
 
       spies?.mocks.handleClick.mockReturnValue('mocked!');
@@ -229,7 +238,7 @@ describe('spy-helper', () => {
 
     it('mocks can have custom implementations', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] }
+        spyOn: { mocks: ['handleClick'] },
       });
 
       let called = false;
@@ -240,18 +249,51 @@ describe('spy-helper', () => {
       spies?.instance.handleClick();
       expect(called).toBe(true);
     });
+
+    it('mocks expose original implementation for augmentation', async () => {
+      const { spies, spyOnEvent } = await render(<my-button>Click me</my-button>, {
+        spyOn: { mocks: ['handleClick'] },
+      });
+      const buttonClickSpy = spyOnEvent('buttonClick');
+
+      // Original is accessible
+      expect(spies?.mocks.handleClick.original).toBeDefined();
+      expect(typeof spies?.mocks.handleClick.original).toBe('function');
+
+      // Use mockImplementation to wrap the original
+      let beforeCalled = false;
+      let afterCalled = false;
+      spies?.mocks.handleClick.mockImplementation((...args: any[]) => {
+        beforeCalled = true;
+        const result = spies?.mocks.handleClick.original?.(...args);
+        afterCalled = true;
+        return result;
+      });
+
+      spies?.instance.handleClick();
+
+      // Our wrapper ran
+      expect(beforeCalled).toBe(true);
+      expect(afterCalled).toBe(true);
+      // Original implementation also ran (event was emitted)
+      expect(buttonClickSpy.length).toBe(1);
+    });
   });
 
   describe('per-render isolation', () => {
     it('different renders can have different spy configs', async () => {
       // First render: only spy on methods
       const { root: root1, spies: spies1 } = await render(<my-button>Button 1</my-button>, {
-        spyOn: { methods: ['handleClick'] }
+        spyOn: { methods: ['handleClick'] },
       });
 
       // Second render: only spy on props
-      const { spies: spies2, setProps, waitForChanges } = await render(<my-button variant="primary">Button 2</my-button>, {
-        spyOn: { props: ['variant'] }
+      const {
+        spies: spies2,
+        setProps,
+        waitForChanges,
+      } = await render(<my-button variant="primary">Button 2</my-button>, {
+        spyOn: { props: ['variant'] },
       });
 
       // First has method spy, no prop spy

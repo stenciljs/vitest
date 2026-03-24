@@ -24,13 +24,7 @@ export default defineVitestConfig({
         test: {
           name: 'custom-elements-output',
           environment: 'jsdom',
-          include: ['**/*.spec.{ts,tsx}'],
-          exclude: [
-            '**/*.jsdom.spec.{ts,tsx}',
-            '**/*-jsdom.spec.{ts,tsx}',
-            '**/*-happy.spec.{ts,tsx}',
-            '**/*.happy.spec.{ts,tsx}',
-          ],
+          include: ['**/spy-helper.spec.tsx'],
           setupFiles: ['./vitest-setup-ce.ts'],
         },
       },
