@@ -1,4 +1,4 @@
-import type { Config as StencilConfig } from '@stencil/core/internal';
+import type { Config as StencilConfig, HydratedFlag } from '@stencil/core/internal';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
@@ -81,6 +81,27 @@ export function getStencilOutputDirs(config?: StencilConfig): string[] {
   const validDirs = Array.from(outputDirs).filter((dir) => !dir.includes('..'));
 
   return validDirs.length > 0 ? validDirs : ['dist', 'www', 'build', '.stencil'];
+}
+
+/**
+ * Get the hydrated flag configuration from Stencil config.
+ * Returns null if hydration indication is explicitly disabled.
+ * Returns defaults if not configured.
+ */
+export function getStencilHydratedFlag(config?: StencilConfig): HydratedFlag | null {
+  // If explicitly null, hydration indication is disabled
+  if (config?.hydratedFlag === null) {
+    return null;
+  }
+  // If undefined or object, return with defaults applied
+  const flag = config?.hydratedFlag;
+  return {
+    name: flag?.name ?? 'hydrated',
+    selector: flag?.selector ?? 'class',
+    property: flag?.property ?? 'visibility',
+    initialValue: flag?.initialValue ?? 'hidden',
+    hydratedValue: flag?.hydratedValue ?? 'inherit',
+  };
 }
 
 /**

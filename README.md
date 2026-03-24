@@ -155,6 +155,18 @@ await setProps({ name: 'Stencil' });
 unmount();
 ```
 
+#### `waitForReady` Option
+
+By default, `render()` waits for components to be fully hydrated before returning. It detects when Stencil applies the hydrated flag (class or attribute) to your component, respecting your `stencil.config` settings.
+
+```tsx
+// Default behaviour - waits for hydration
+const { root } = await render(<my-component />);
+
+// Skip hydration wait (useful for testing loading states)
+const { root } = await render(<my-component />, { waitForReady: false });
+```
+
 ### Available matchers:
 
 ```typescript
