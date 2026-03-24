@@ -182,6 +182,16 @@ await expect(element).toEqualLightHtml('<div>Light DOM only</div>');
 Spy on component methods, props, and lifecycle hooks to verify behaviour without modifying your component code.
 
 > **Setup requirement:** Load your components in a `beforeAll` block (typically in your setup file). The spy system patches `customElements.define`, so components must be registered after the test framework initializes.
+>
+> ```diff
+> // vitest-setup.ts
+> - await import('./dist/test-components/test-components.esm.js');
+>
+> + import { beforeAll } from 'vitest';
+> + beforeAll(async () => {
+> +   await import('./dist/test-components/test-components.esm.js');
+> + });
+> ```
 
 #### Method Spying
 
