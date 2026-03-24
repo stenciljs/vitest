@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/stenciljs/vitest/compare/v1.8.3...v1.9.0) (2026-03-24)
+
+
+### Features
+
+* component spying and mocking ([#38](https://github.com/stenciljs/vitest/issues/38)) ([0656b7a](https://github.com/stenciljs/vitest/commit/0656b7ae707c9a1202690a7c6519153d318442bc))
+* init mock setup ([#40](https://github.com/stenciljs/vitest/issues/40)) ([29369f1](https://github.com/stenciljs/vitest/commit/29369f1f700019faef3acb50ee888dba8f85ccf9))
+* use stencil hydrated config to assess readiness ([#41](https://github.com/stenciljs/vitest/issues/41)) ([e6aac4e](https://github.com/stenciljs/vitest/commit/e6aac4e750e8c304f3788118e5fb2798b29ac603))
+
 ## [1.8.3](https://github.com/stenciljs/vitest/compare/v1.8.2...v1.8.3) (2026-03-19)
 
 
