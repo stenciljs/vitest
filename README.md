@@ -217,43 +217,42 @@ spies?.methods.handleClick.mockClear();
 
 #### Method Mocking
 
-Replace methods with stubs that don't call the original implementation:
+Replace methods with pre-configured mocks. This is especially useful for methods called during initialization (e.g., in `componentWillLoad`):
 
 ```tsx
-// Mock a data fetching method to return test data
-const { root, spies, waitForChanges } = await render(<user-profile userId="123" />, {
-  spyOn: {
-    mocks: ['fetchUserData'], // Pure stub - no real API call
-  },
-});
-
-// Return stubbed data instead of hitting the API
-spies?.mocks.fetchUserData.mockResolvedValue({
+// Create mock with desired return value BEFORE render
+const fetchUserMock = vi.fn().mockResolvedValue({
   id: '123',
   name: 'Test User',
   email: 'test@example.com',
 });
 
-// Trigger the fetch
-root.loadUser();
+// Mock is applied before componentWillLoad runs
+const { root, spies, waitForChanges } = await render(<user-profile userId="123" />, {
+  spyOn: {
+    mocks: { fetchUserData: fetchUserMock },
+  },
+});
+
 await waitForChanges();
 
-// Verify the mock was called with correct args
-expect(spies?.mocks.fetchUserData).toHaveBeenCalledWith('123');
+// Verify the mock was called (even during initialization)
+expect(fetchUserMock).toHaveBeenCalledWith('123');
 
-// Component should render with stubbed data
+// Component rendered with stubbed data
 expect(root.shadowRoot?.querySelector('.name')?.textContent).toBe('Test User');
 ```
 
 Access the original implementation to augment rather than fully replace:
 
 ```tsx
+const fetchMock = vi.fn();
 const { spies } = await render(<my-component />, {
-  spyOn: { mocks: ['fetchData'] },
+  spyOn: { mocks: { fetchData: fetchMock } },
 });
 
 // Wrap the original to add logging or modify behaviour
-spies?.mocks.fetchData.mockImplementation(async (...args) => {
+fetchMock.mockImplementation(async (...args) => {
   console.log('Fetching data with args:', args);
   const result = await spies?.mocks.fetchData.original?.(...args);
   console.log('Got result:', result);
@@ -308,16 +307,14 @@ expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(2);
 Reset all spies at once using `resetAll()`. This clears call histories AND resets mock implementations:
 
 ```tsx
+const fetchMock = vi.fn().mockReturnValue('mocked');
 const { root, spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
   spyOn: {
     methods: ['handleClick'],
-    mocks: ['fetchData'],
+    mocks: { fetchData: fetchMock },
     props: ['variant'],
   },
 });
-
-// Set up a mock
-spies?.mocks.fetchData.mockReturnValue('mocked');
 
 // Trigger some calls
 root.shadowRoot?.querySelector('button')?.click();
@@ -331,7 +328,7 @@ expect(spies?.methods.handleClick).toHaveBeenCalledTimes(0);
 expect(spies?.props.variant).toHaveBeenCalledTimes(0);
 
 // Mock implementations reset to default (returns undefined)
-expect(spies?.mocks.fetchData()).toBeUndefined();
+expect(fetchMock()).toBeUndefined();
 ```
 
 #### Nested Components

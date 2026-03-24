@@ -1,4 +1,4 @@
-import { describe, it, expect, h, getComponentSpies } from '@stencil/vitest';
+import { describe, it, expect, h, getComponentSpies, vi } from '@stencil/vitest';
 import { render } from '@stencil/vitest';
 
 const spyConfig = {
@@ -209,7 +209,7 @@ describe('spy-helper', () => {
   describe('method mocking', () => {
     it('mocks replace method without calling original', async () => {
       const { root, spies, spyOnEvent } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] },
+        spyOn: { mocks: { handleClick: vi.fn() } },
       });
       const buttonClickSpy = spyOnEvent('buttonClick');
 
@@ -226,7 +226,7 @@ describe('spy-helper', () => {
 
     it('mocks can have custom return values', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] },
+        spyOn: { mocks: { handleClick: vi.fn() } },
       });
 
       spies?.mocks.handleClick.mockReturnValue('mocked!');
@@ -237,7 +237,7 @@ describe('spy-helper', () => {
 
     it('mocks can have custom implementations', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] },
+        spyOn: { mocks: { handleClick: vi.fn() } },
       });
 
       let called = false;
@@ -324,7 +324,7 @@ describe('spy-helper', () => {
 
     it('resets mock implementations to default', async () => {
       const { spies } = await render(<my-button>Click me</my-button>, {
-        spyOn: { mocks: ['handleClick'] },
+        spyOn: { mocks: { handleClick: vi.fn() } },
       });
 
       // Set a custom mock implementation
