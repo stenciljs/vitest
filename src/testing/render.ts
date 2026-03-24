@@ -1,5 +1,6 @@
 import { render as stencilRender } from '@stencil/core';
 import type { RenderResult, EventSpy } from '../types.js';
+import { setRenderSpyConfig, getComponentSpies, type SpyConfig } from './spy-helper.js';
 
 interface RenderOptions {
   /**
@@ -16,6 +17,11 @@ interface RenderOptions {
    * Defaults to true.
    */
   waitForReady?: boolean;
+  /**
+   * Spy configuration for this render call. Spies on methods, props, and lifecycle hooks.
+   * This takes priority over module-level spyOnComponent() calls.
+   */
+  spyOn?: SpyConfig;
 }
 
 // Track event spies
@@ -130,12 +136,22 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   }
   document.body.appendChild(container);
 
+  // Set per-render spy config before element creation
+  if (options.spyOn) {
+    setRenderSpyConfig(options.spyOn);
+  }
+
   if (typeof template === 'string') {
     // Handle string template - add as innerHTML
     container.innerHTML = template;
   } else {
     // Use Stencil's render which handles VNodes properly in the browser
     await stencilRender(template, container);
+  }
+
+  // Clear per-render spy config after element creation
+  if (options.spyOn) {
+    setRenderSpyConfig(null);
   }
 
   // Get the rendered element
@@ -255,6 +271,9 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     instance = (element as any).__stencil__getHostRef()?.$lazyInstance$ || element;
   }
 
+  // Get spies if spyOn option was used
+  const spies = options.spyOn ? getComponentSpies(element) : undefined;
+
   return {
     root: element,
     waitForChanges,
@@ -262,5 +281,6 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     setProps,
     unmount,
     spyOnEvent,
+    spies,
   };
 }

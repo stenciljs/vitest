@@ -6,3 +6,4 @@ export { h } from '@stencil/core';
 export { render, waitForStable, waitForExist } from './testing/render.js';
 export { serializeHtml, prettifyHtml, SerializeOptions } from './testing/html-serializer.js';
 export type { RenderOptions, RenderResult } from './types.js';
+export type { SpyConfig, ComponentSpies } from './testing/spy-helper.js';
