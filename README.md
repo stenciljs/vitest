@@ -217,29 +217,25 @@ spies?.methods.handleClick.mockClear();
 
 #### Method Mocking
 
-Replace methods with pre-configured mocks. This is especially useful for methods called during initialization (e.g., in `componentWillLoad`):
+Replace methods with pre-configured mocks:
 
 ```tsx
-// Create mock with desired return value BEFORE render
+// Create mock with desired return value *before* render
 const fetchUserMock = vi.fn().mockResolvedValue({
   id: '123',
   name: 'Test User',
   email: 'test@example.com',
 });
 
-// Mock is applied before componentWillLoad runs
+// Mock is applied before initialisation
 const { root, spies, waitForChanges } = await render(<user-profile userId="123" />, {
   spyOn: {
     mocks: { fetchUserData: fetchUserMock },
   },
 });
-
 await waitForChanges();
 
-// Verify the mock was called (even during initialization)
 expect(fetchUserMock).toHaveBeenCalledWith('123');
-
-// Component rendered with stubbed data
 expect(root.shadowRoot?.querySelector('.name')?.textContent).toBe('Test User');
 ```
 
