@@ -17,7 +17,21 @@ export default defineVitestConfig({
             '**/*-happy.spec.{ts,tsx}',
             '**/*.happy.spec.{ts,tsx}',
           ],
-          setupFiles: ['./vitest-setup.ts'],
+          setupFiles: ['./vitest-setup-dist.ts'],
+        },
+      },
+      {
+        test: {
+          name: 'custom-elements-output',
+          environment: 'jsdom',
+          include: ['**/*.spec.{ts,tsx}'],
+          exclude: [
+            '**/*.jsdom.spec.{ts,tsx}',
+            '**/*-jsdom.spec.{ts,tsx}',
+            '**/*-happy.spec.{ts,tsx}',
+            '**/*.happy.spec.{ts,tsx}',
+          ],
+          setupFiles: ['./vitest-setup-ce.ts'],
         },
       },
       {
@@ -25,7 +39,7 @@ export default defineVitestConfig({
           name: 'jsdom',
           include: ['**/*-jsdom.spec.{ts,tsx}', '**/*.jsdom.spec.{ts,tsx}'],
           environment: 'jsdom',
-          setupFiles: ['./vitest-setup.ts'],
+          setupFiles: ['./vitest-setup-dist.ts'],
         },
       },
       {
@@ -33,7 +47,7 @@ export default defineVitestConfig({
           name: 'happy-dom',
           include: ['**/*-happy.spec.{ts,tsx}', '**/*.happy.spec.{ts,tsx}'],
           environment: 'happy-dom',
-          setupFiles: ['./vitest-setup.ts'],
+          setupFiles: ['./vitest-setup-dist.ts'],
         },
       },
       {
@@ -53,7 +67,7 @@ export default defineVitestConfig({
         test: {
           name: 'browser',
           include: ['**/*.e2e.{ts,tsx}'],
-          setupFiles: ['./vitest-setup.ts'],
+          setupFiles: ['./vitest-setup-dist.ts'],
           browser: {
             enabled: true,
             provider: playwright(),

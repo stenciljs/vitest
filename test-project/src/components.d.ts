@@ -158,9 +158,21 @@ declare namespace LocalJSX {
      */
     interface NonShadowComponent {
     }
+
+    interface MyButtonAttributes {
+        "variant": 'primary' | 'secondary' | 'danger';
+        "disabled": boolean;
+        "size": 'small' | 'medium' | 'large';
+    }
+    interface MyCardAttributes {
+        "cardTitle": string;
+        "elevation": 0 | 1 | 2 | 3;
+        "interactive": boolean;
+    }
+
     interface IntrinsicElements {
-        "my-button": MyButton;
-        "my-card": MyCard;
+        "my-button": Omit<MyButton, keyof MyButtonAttributes> & { [K in keyof MyButton & keyof MyButtonAttributes]?: MyButton[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `attr:${K}`]?: MyButtonAttributes[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `prop:${K}`]?: MyButton[K] };
+        "my-card": Omit<MyCard, keyof MyCardAttributes> & { [K in keyof MyCard & keyof MyCardAttributes]?: MyCard[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `attr:${K}`]?: MyCardAttributes[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `prop:${K}`]?: MyCard[K] };
         "non-shadow-component": NonShadowComponent;
     }
 }
@@ -171,18 +183,18 @@ declare module "@stencil/core" {
             /**
              * A simple button component for testing
              */
-            "my-button": LocalJSX.MyButton & JSXBase.HTMLAttributes<HTMLMyButtonElement>;
+            "my-button": LocalJSX.IntrinsicElements["my-button"] & JSXBase.HTMLAttributes<HTMLMyButtonElement>;
             /**
              * A card component with header, content, and footer slots
              */
-            "my-card": LocalJSX.MyCard & JSXBase.HTMLAttributes<HTMLMyCardElement>;
+            "my-card": LocalJSX.IntrinsicElements["my-card"] & JSXBase.HTMLAttributes<HTMLMyCardElement>;
             /**
              * Test component with scoped encapsulation (non-shadow) and slots
              * Stencil polyfills slot behavior and protects the component by monkey-patching
              * childNodes, children, firstChild, lastChild to only return lightDOM
              * Original accessors are moved to __childNodes, __children, etc.
              */
-            "non-shadow-component": LocalJSX.NonShadowComponent & JSXBase.HTMLAttributes<HTMLNonShadowComponentElement>;
+            "non-shadow-component": LocalJSX.IntrinsicElements["non-shadow-component"] & JSXBase.HTMLAttributes<HTMLNonShadowComponentElement>;
         }
     }
 }

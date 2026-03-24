@@ -198,6 +198,50 @@ describe('spy-helper', () => {
     });
   });
 
+  describe('method mocking', () => {
+    it('mocks replace method without calling original', async () => {
+      const { root, spies, spyOnEvent } = await render(<my-button>Click me</my-button>, {
+        spyOn: { mocks: ['handleClick'] }
+      });
+      const buttonClickSpy = spyOnEvent('buttonClick');
+
+      expect(spies?.mocks.handleClick).toBeDefined();
+
+      const button = root.shadowRoot?.querySelector('button');
+      button?.click();
+
+      // Mock was called
+      expect(spies?.mocks.handleClick).toHaveBeenCalledTimes(1);
+      // But original implementation did NOT run (no event emitted)
+      expect(buttonClickSpy.length).toBe(0);
+    });
+
+    it('mocks can have custom return values', async () => {
+      const { spies } = await render(<my-button>Click me</my-button>, {
+        spyOn: { mocks: ['handleClick'] }
+      });
+
+      spies?.mocks.handleClick.mockReturnValue('mocked!');
+
+      const result = spies?.instance.handleClick();
+      expect(result).toBe('mocked!');
+    });
+
+    it('mocks can have custom implementations', async () => {
+      const { spies } = await render(<my-button>Click me</my-button>, {
+        spyOn: { mocks: ['handleClick'] }
+      });
+
+      let called = false;
+      spies?.mocks.handleClick.mockImplementation(() => {
+        called = true;
+      });
+
+      spies?.instance.handleClick();
+      expect(called).toBe(true);
+    });
+  });
+
   describe('per-render isolation', () => {
     it('different renders can have different spy configs', async () => {
       // First render: only spy on methods

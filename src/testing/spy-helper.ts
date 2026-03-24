@@ -5,9 +5,13 @@ import { vi, type Mock } from 'vitest';
  */
 export interface SpyConfig {
   /**
-   * Method names to spy on
+   * Method names to spy on (calls through to original implementation)
    */
   methods?: string[];
+  /**
+   * Method names to mock (pure stub, doesn't call original)
+   */
+  mocks?: string[];
   /**
    * Property names to spy on (tracks setter calls)
    */
@@ -23,9 +27,13 @@ export interface SpyConfig {
  */
 export interface ComponentSpies {
   /**
-   * Spies on component methods
+   * Spies on component methods (calls through to original)
    */
   methods: Record<string, Mock>;
+  /**
+   * Mocks on component methods (pure stubs, doesn't call original)
+   */
+  mocks: Record<string, Mock>;
   /**
    * Spies on property setters
    */
@@ -67,12 +75,13 @@ const origDefine = customElements.define.bind(customElements);
 function applySpies(target: any, config: SpyConfig): ComponentSpies {
   const spies: ComponentSpies = {
     methods: {},
+    mocks: {},
     props: {},
     lifecycle: {},
     instance: target,
   };
 
-  // Spy on methods
+  // Spy on methods (calls through to original)
   if (config.methods) {
     for (const methodName of config.methods) {
       const method = target[methodName];
@@ -87,6 +96,21 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
           configurable: true,
         });
       }
+    }
+  }
+
+  // Mock methods (pure stub, no call-through)
+  if (config.mocks) {
+    for (const methodName of config.mocks) {
+      const spy = vi.fn() as Mock & { __isSpy?: boolean };
+      spy.__isSpy = true;
+      spies.mocks[methodName] = spy;
+
+      Object.defineProperty(target, methodName, {
+        value: spy,
+        writable: true,
+        configurable: true,
+      });
     }
   }
 
