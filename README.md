@@ -205,7 +205,7 @@ spies?.methods.handleClick.mockClear();
 
 #### Method Mocking
 
-Replace methods with stubs that don't call the original implementation. Useful for stubbing API calls or other side effects:
+Replace methods with stubs that don't call the original implementation:
 
 ```tsx
 // Mock a data fetching method to return test data
@@ -233,7 +233,7 @@ expect(spies?.mocks.fetchUserData).toHaveBeenCalledWith('123');
 expect(root.shadowRoot?.querySelector('.name')?.textContent).toBe('Test User');
 ```
 
-You can also access the original implementation to augment rather than fully replace:
+Access the original implementation to augment rather than fully replace:
 
 ```tsx
 const { spies } = await render(<my-component />, {
@@ -289,6 +289,116 @@ await waitForChanges();
 // Re-render lifecycle methods called again
 expect(spies?.lifecycle.componentWillRender).toHaveBeenCalledTimes(2);
 expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(2);
+```
+
+#### Resetting Spies
+
+Reset all spies at once using `resetAll()`. This clears call histories AND resets mock implementations:
+
+```tsx
+const { root, spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+  spyOn: {
+    methods: ['handleClick'],
+    mocks: ['fetchData'],
+    props: ['variant'],
+  },
+});
+
+// Set up a mock
+spies?.mocks.fetchData.mockReturnValue('mocked');
+
+// Trigger some calls
+root.shadowRoot?.querySelector('button')?.click();
+await setProps({ variant: 'danger' });
+
+// Reset everything
+spies?.resetAll();
+
+// Call histories cleared
+expect(spies?.methods.handleClick).toHaveBeenCalledTimes(0);
+expect(spies?.props.variant).toHaveBeenCalledTimes(0);
+
+// Mock implementations reset to default (returns undefined)
+expect(spies?.mocks.fetchData()).toBeUndefined();
+```
+
+#### Nested Components
+
+When the root element is not a custom element, or when you have multiple custom elements, use `getComponentSpies()` to retrieve spies for specific elements:
+
+```tsx
+import { render, getComponentSpies, h } from '@stencil/vitest';
+
+// Root is a div, not a custom element
+const { root } = await render(
+  <div>
+    <my-button>Click me</my-button>
+  </div>,
+  {
+    spyOn: { methods: ['handleClick'] },
+  },
+);
+
+// Query the nested custom element
+const button = root.querySelector('my-button') as HTMLElement;
+
+// Get spies for the nested element
+const buttonSpies = getComponentSpies(button);
+expect(buttonSpies?.methods.handleClick).toBeDefined();
+
+// Multiple instances have independent spies
+const { root: container } = await render(
+  <div>
+    <my-button class="a">A</my-button>
+    <my-button class="b">B</my-button>
+  </div>,
+  { spyOn: { methods: ['handleClick'] } },
+);
+
+const spiesA = getComponentSpies(container.querySelector('.a') as HTMLElement);
+const spiesB = getComponentSpies(container.querySelector('.b') as HTMLElement);
+
+// Each has its own spy instance
+container.querySelector('.a')?.shadowRoot?.querySelector('button')?.click();
+expect(spiesA?.methods.handleClick).toHaveBeenCalledTimes(1);
+expect(spiesB?.methods.handleClick).toHaveBeenCalledTimes(0);
+```
+
+#### Per-Component Configurations
+
+When rendering multiple different component types, use the `components` property to specify different spy configs per tag:
+
+```tsx
+const { root } = await render(
+  <my-form>
+    <my-input name="email" />
+    <my-button type="submit">Submit</my-button>
+  </my-form>,
+  {
+    spyOn: {
+      // Base config applies to all components
+      lifecycle: ['componentDidLoad'],
+      // Per-component overrides
+      components: {
+        'my-form': { methods: ['handleSubmit', 'validate'] },
+        'my-input': { props: ['value'], methods: ['focus'] },
+        'my-button': { methods: ['handleClick'] },
+      },
+    },
+  },
+);
+
+// Get spies for each component
+const formSpies = getComponentSpies(root);
+const inputSpies = getComponentSpies(root.querySelector('my-input') as HTMLElement);
+const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
+
+// Each has the base lifecycle spy plus their specific spies
+expect(formSpies?.lifecycle.componentDidLoad).toBeDefined();
+expect(formSpies?.methods.handleSubmit).toBeDefined();
+
+expect(inputSpies?.lifecycle.componentDidLoad).toBeDefined();
+expect(inputSpies?.props.value).toBeDefined();
 ```
 
 ### Event Testing

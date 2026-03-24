@@ -1,4 +1,4 @@
-import { describe, it, expect, h } from '@stencil/vitest';
+import { describe, it, expect, h, getComponentSpies } from '@stencil/vitest';
 import { render } from '@stencil/vitest';
 
 const spyConfig = {
@@ -287,6 +287,215 @@ describe('spy-helper', () => {
       const { spies } = await render(<my-button>No spies</my-button>);
 
       expect(spies).toBeUndefined();
+    });
+  });
+
+  describe('resetAll', () => {
+    it('resets all spy call histories and implementations', async () => {
+      const { root, spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+        spyOn: {
+          methods: ['handleClick'],
+          props: ['variant'],
+          lifecycle: ['componentDidRender'],
+        },
+      });
+
+      // Trigger some calls
+      root.shadowRoot?.querySelector('button')?.click();
+      await setProps({ variant: 'danger' });
+      await waitForChanges();
+
+      // Verify calls were tracked
+      expect(spies?.methods.handleClick).toHaveBeenCalled();
+      expect(spies?.props.variant).toHaveBeenCalled();
+      expect(spies?.lifecycle.componentDidRender).toHaveBeenCalled();
+
+      // Reset all
+      spies?.resetAll();
+
+      // All call histories should be cleared
+      expect(spies?.methods.handleClick).toHaveBeenCalledTimes(0);
+      expect(spies?.props.variant).toHaveBeenCalledTimes(0);
+      expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(0);
+    });
+
+    it('resets mock implementations to default', async () => {
+      const { spies } = await render(<my-button>Click me</my-button>, {
+        spyOn: { mocks: ['handleClick'] },
+      });
+
+      // Set a custom mock implementation
+      spies?.mocks.handleClick.mockReturnValue('custom');
+      expect(spies?.instance.handleClick()).toBe('custom');
+
+      // Reset all
+      spies?.resetAll();
+
+      // Mock should return undefined now (default)
+      expect(spies?.instance.handleClick()).toBeUndefined();
+    });
+  });
+
+  describe('nested components', () => {
+    it('can get spies for nested custom elements via getComponentSpies', async () => {
+      // Render with a wrapper div
+      const { root } = await render(
+        <div>
+          <my-button>Nested button</my-button>
+        </div>,
+        {
+          spyOn: { methods: ['handleClick'] },
+        },
+      );
+
+      // Root is the div, not the custom element
+      expect(root.tagName.toLowerCase()).toBe('div');
+
+      // Find the nested custom element
+      const nestedButton = root.querySelector('my-button') as HTMLElement;
+      expect(nestedButton).toBeDefined();
+
+      // Get spies for the nested element
+      const nestedSpies = getComponentSpies(nestedButton);
+      expect(nestedSpies).toBeDefined();
+      expect(nestedSpies?.methods.handleClick).toBeDefined();
+
+      // Trigger and verify
+      nestedButton.shadowRoot?.querySelector('button')?.click();
+      expect(nestedSpies?.methods.handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('multiple instances have independent spies', async () => {
+      const { root } = await render(
+        <div>
+          <my-button class="first">First</my-button>
+          <my-button class="second">Second</my-button>
+        </div>,
+        {
+          spyOn: { methods: ['handleClick'] },
+        },
+      );
+
+      const first = root.querySelector('.first') as HTMLElement;
+      const second = root.querySelector('.second') as HTMLElement;
+
+      const firstSpies = getComponentSpies(first);
+      const secondSpies = getComponentSpies(second);
+
+      // Both should have spies
+      expect(firstSpies?.methods.handleClick).toBeDefined();
+      expect(secondSpies?.methods.handleClick).toBeDefined();
+
+      // They should be independent
+      first.shadowRoot?.querySelector('button')?.click();
+      expect(firstSpies?.methods.handleClick).toHaveBeenCalledTimes(1);
+      expect(secondSpies?.methods.handleClick).toHaveBeenCalledTimes(0);
+
+      second.shadowRoot?.querySelector('button')?.click();
+      second.shadowRoot?.querySelector('button')?.click();
+      expect(firstSpies?.methods.handleClick).toHaveBeenCalledTimes(1);
+      expect(secondSpies?.methods.handleClick).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('per-component spy configs', () => {
+    it('applies different spy configs to different component types', async () => {
+      const { root } = await render(
+        <my-card cardTitle="Test Card">
+          <my-button slot="footer">Click me</my-button>
+        </my-card>,
+        {
+          spyOn: {
+            components: {
+              'my-card': { props: ['cardTitle', 'elevation'] },
+              'my-button': { methods: ['handleClick'] },
+            },
+          },
+        },
+      );
+
+      // Get spies for each component
+      const cardSpies = getComponentSpies(root);
+      const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
+
+      // my-card should have prop spies but no method spies
+      expect(cardSpies).toBeDefined();
+      expect(cardSpies?.props.cardTitle).toBeDefined();
+      expect(cardSpies?.props.elevation).toBeDefined();
+      expect(cardSpies?.methods.handleClick).toBeUndefined();
+
+      // my-button should have method spies but no prop spies
+      expect(buttonSpies).toBeDefined();
+      expect(buttonSpies?.methods.handleClick).toBeDefined();
+      expect(buttonSpies?.props.cardTitle).toBeUndefined();
+
+      // Verify they work
+      root.querySelector('my-button')?.shadowRoot?.querySelector('button')?.click();
+      expect(buttonSpies?.methods.handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('merges base config with per-component config', async () => {
+      const { root, waitForChanges } = await render(
+        <my-card cardTitle="Test Card">
+          <my-button>Click me</my-button>
+        </my-card>,
+        {
+          spyOn: {
+            // Base config - applies to all components
+            lifecycle: ['componentDidLoad'],
+            // Per-component overrides - merged with base
+            components: {
+              'my-card': { props: ['cardTitle'] },
+              'my-button': { methods: ['handleClick'] },
+            },
+          },
+        },
+      );
+
+      await waitForChanges();
+
+      const cardSpies = getComponentSpies(root);
+      const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
+
+      // Both should have lifecycle spy from base config
+      expect(cardSpies?.lifecycle.componentDidLoad).toBeDefined();
+      expect(buttonSpies?.lifecycle.componentDidLoad).toBeDefined();
+
+      // Each should also have their component-specific spies
+      expect(cardSpies?.props.cardTitle).toBeDefined();
+      expect(buttonSpies?.methods.handleClick).toBeDefined();
+
+      // Lifecycle should have been called during render
+      expect(cardSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+      expect(buttonSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+    });
+
+    it('component without specific config only gets base config', async () => {
+      const { root } = await render(
+        <my-card cardTitle="Test Card">
+          <my-button>Click me</my-button>
+        </my-card>,
+        {
+          spyOn: {
+            lifecycle: ['componentDidLoad'],
+            components: {
+              // Only my-button has specific config
+              'my-button': { methods: ['handleClick'] },
+            },
+          },
+        },
+      );
+
+      const cardSpies = getComponentSpies(root);
+      const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
+
+      // my-card only gets base lifecycle spy
+      expect(cardSpies?.lifecycle.componentDidLoad).toBeDefined();
+      expect(cardSpies?.methods.handleClick).toBeUndefined();
+
+      // my-button gets base + component-specific
+      expect(buttonSpies?.lifecycle.componentDidLoad).toBeDefined();
+      expect(buttonSpies?.methods.handleClick).toBeDefined();
     });
   });
 });

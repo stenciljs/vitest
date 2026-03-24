@@ -1,25 +1,47 @@
 import { vi, type Mock } from 'vitest';
 
 /**
- * Configuration for what to spy on in a component
+ * Base configuration for what to spy on in a component
  */
-export interface SpyConfig {
+export interface SpyConfigBase {
   /**
-   * Method names to spy on (calls through to original implementation)
+   * Method names to spy on (calls original implementation)
    */
   methods?: string[];
   /**
-   * Method names to mock (pure stub, doesn't call original)
+   * Method names to mock (doesn't call original)
    */
   mocks?: string[];
   /**
-   * Property names to spy on (tracks setter calls)
+   * Property names to spy on
    */
   props?: string[];
   /**
-   * Lifecycle method names to spy on (e.g., 'componentWillLoad', 'componentDidRender')
+   * Lifecycle method names to spy on ('componentWillLoad', 'componentDidRender')
    */
   lifecycle?: string[];
+}
+
+/**
+ * Configuration for what to spy on in a component.
+ * Can include per-component overrides via the `components` property.
+ */
+export interface SpyConfig extends SpyConfigBase {
+  /**
+   * Per-component spy configurations, keyed by tag name.
+   * These override the base config for specific components.
+   * @example
+   * ```ts
+   * spyOn: {
+   *   lifecycle: ['componentDidLoad'], // applies to all
+   *   components: {
+   *     'my-select': { methods: ['open', 'close'] },
+   *     'my-option': { methods: ['select'] },
+   *   }
+   * }
+   * ```
+   */
+  components?: Record<string, SpyConfigBase>;
 }
 
 /**
@@ -58,6 +80,10 @@ export interface ComponentSpies {
    * The target instance (either $lazyInstance$ or the element itself for custom-elements output)
    */
   instance: any;
+  /**
+   * Reset all spies/mocks - clears call history AND resets implementations to default.
+   */
+  resetAll: () => void;
 }
 
 // Registry of components to spy on (by tag name)
@@ -69,6 +95,38 @@ const pendingSpies = new WeakMap<HTMLElement, { instance: any; config: SpyConfig
 
 // Per-render spy config (set by render(), consumed by constructor)
 let pendingRenderConfig: SpyConfig | null = null;
+
+/**
+ * Resolve the spy config for a specific tag, merging base config with per-component overrides.
+ */
+function resolveConfigForTag(config: SpyConfig, tagName: string): SpyConfigBase | null {
+  const tagLower = tagName.toLowerCase();
+  const tagConfig = config.components?.[tagLower];
+
+  // Extract base config (everything except `components`)
+  const { components, ...baseConfig } = config;
+  const hasBaseConfig = baseConfig.methods?.length || baseConfig.mocks?.length || baseConfig.props?.length || baseConfig.lifecycle?.length;
+
+  if (!tagConfig && !hasBaseConfig) {
+    return null; // No config applies to this tag
+  }
+
+  if (!tagConfig) {
+    return baseConfig; // Only base config
+  }
+
+  if (!hasBaseConfig) {
+    return tagConfig; // Only tag-specific config
+  }
+
+  // Merge: tag-specific arrays are added to base arrays (not replaced)
+  return {
+    methods: [...(baseConfig.methods || []), ...(tagConfig.methods || [])],
+    mocks: [...(baseConfig.mocks || []), ...(tagConfig.mocks || [])],
+    props: [...(baseConfig.props || []), ...(tagConfig.props || [])],
+    lifecycle: [...(baseConfig.lifecycle || []), ...(tagConfig.lifecycle || [])],
+  };
+}
 
 /**
  * Set spy config for the next render call. Used internally by render().
@@ -91,6 +149,24 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
     props: {},
     lifecycle: {},
     instance: target,
+    resetAll() {
+      // Reset all method spies
+      for (const spy of Object.values(this.methods) as Mock[]) {
+        spy.mockReset();
+      }
+      // Reset all mocks
+      for (const mock of Object.values(this.mocks) as Mock[]) {
+        mock.mockReset();
+      }
+      // Reset all prop spies
+      for (const spy of Object.values(this.props) as Mock[]) {
+        spy.mockReset();
+      }
+      // Reset all lifecycle spies
+      for (const spy of Object.values(this.lifecycle) as Mock[]) {
+        spy.mockReset();
+      }
+    },
   };
 
   // Spy on methods (calls through to original)
@@ -198,9 +274,13 @@ customElements.define = function (name: string, ctor: CustomElementConstructor, 
       super(...args);
 
       // Check for spy config: per-render takes priority, then module-level
-      // Capture config NOW at constructor time (before async callbacks)
-      const configToUse = pendingRenderConfig || spyTargets[lc];
-      if (!configToUse) return; // No spying configured, quick exit
+      // Capture config now, at constructor time (before async callbacks)
+      const baseConfig = pendingRenderConfig || spyTargets[lc];
+      if (!baseConfig) return; // No spying configured, quick exit
+
+      // Resolve config for this specific tag (handles per-component overrides)
+      const configToUse = resolveConfigForTag(baseConfig, lc);
+      if (!configToUse) return; // No config applies to this tag
 
       // After super(), registerHost has run and we have access to hostRef
       const hostRef = (this as any).__stencil__getHostRef?.();
@@ -232,34 +312,6 @@ customElements.define = function (name: string, ctor: CustomElementConstructor, 
 
   return origDefine.call(customElements, name, Wrapped, options);
 };
-
-/**
- * Register spy targets for a component. Must be called BEFORE the component is defined/rendered.
- *
- * Works with both output targets:
- * - **dist/lazy**: Spies are applied to `$lazyInstance$` when it's created
- * - **dist-custom-elements**: Spies are applied to the element itself
- *
- * @example
- * ```ts
- * // At module level, before any tests
- * spyOnComponent('my-button', {
- *   methods: ['handleClick', 'validate'],
- *   props: ['value', 'disabled'],
- *   lifecycle: ['componentWillLoad'],
- * });
- *
- * // Then render and get spies
- * const { root } = await render(<my-button />);
- * const spies = getComponentSpies(root);
- *
- * // Assert on method calls
- * expect(spies?.methods.handleClick).toHaveBeenCalled();
- * ```
- */
-export function spyOnComponent(tagName: string, config: SpyConfig): void {
-  spyTargets[tagName.toLowerCase()] = config;
-}
 
 /**
  * Get the spies for a rendered component instance.
@@ -311,31 +363,4 @@ export function clearComponentSpies(tagName?: string): void {
       delete spyTargets[key];
     }
   }
-}
-
-/**
- * Create a mock implementation for a component method.
- * Useful for controlling return values or throwing errors in tests.
- *
- * @example
- * ```ts
- * const spies = getComponentSpies(root);
- * mockImplementation(spies.methods.fetchData, async () => ({ data: 'mocked' }));
- * ```
- */
-export function mockImplementation<T extends (...args: any[]) => any>(spy: Mock, implementation: T): void {
-  spy.mockImplementation(implementation);
-}
-
-/**
- * Create a mock return value for a component method.
- *
- * @example
- * ```ts
- * const spies = getComponentSpies(root);
- * mockReturnValue(spies.methods.getValue, 42);
- * ```
- */
-export function mockReturnValue<T>(spy: Mock, value: T): void {
-  spy.mockReturnValue(value);
 }

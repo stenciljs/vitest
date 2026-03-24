@@ -19,7 +19,6 @@ interface RenderOptions {
   waitForReady?: boolean;
   /**
    * Spy configuration for this render call. Spies on methods, props, and lifecycle hooks.
-   * This takes priority over module-level spyOnComponent() calls.
    */
   spyOn?: SpyConfig;
 }
@@ -156,7 +155,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     throw new Error('Failed to render component');
   }
 
-  // Wait for custom element to be defined (needed for MutationObserver-based loaders)
+  // Wait for custom element to be defined
   const tagName = element.tagName.toLowerCase();
   if (tagName.includes('-')) {
     await customElements.whenDefined(tagName);
@@ -167,7 +166,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     await (element as any).componentOnReady();
   }
 
-  // Clear per-render spy config AFTER component is fully ready
+  // Clear per-render spy config after component is ready
   if (options.spyOn) {
     setRenderSpyConfig(null);
   }

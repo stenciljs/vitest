@@ -13,7 +13,8 @@
     "test-project/src/**/*",
     "test-project/stencil.config.ts",
     "test-project/vitest.config.ts",
-    "test-project/vitest-setup.ts",
+    "test-project/vitest-setup-dist.ts",
+    "test-project/vitest-setup-ce.ts",
 
     "test-project-env-comments/src/**/*",
     "test-project-env-comments/stencil.config.ts",
