@@ -28,6 +28,8 @@ export interface EventSpy {
   length: number;
 }
 
+import type { SpyConfig } from './testing/spy-helper.js';
+
 /**
  * Component render options
  */
@@ -57,7 +59,15 @@ export interface RenderOptions {
    * Additional HTML attributes
    */
   attributes?: Record<string, string>;
+
+  /**
+   * Spy configuration for this render call. Spies on methods, props, and lifecycle hooks.
+   * Takes priority over module-level spyOnComponent() calls.
+   */
+  spyOn?: SpyConfig;
 }
+
+import type { ComponentSpies } from './testing/spy-helper.js';
 
 /**
  * Render result for component testing
@@ -93,4 +103,9 @@ export interface RenderResult<T = HTMLElement, I = any> {
    * Spy on a custom event
    */
   spyOnEvent: (eventName: string) => EventSpy;
+
+  /**
+   * Component spies (only present when `spyOn` option is used)
+   */
+  spies?: ComponentSpies;
 }

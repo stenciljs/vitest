@@ -177,6 +177,228 @@ await expect(element).toEqualHtml('<div>Expected HTML</div>');
 await expect(element).toEqualLightHtml('<div>Light DOM only</div>');
 ```
 
+### Spying and Mocking
+
+Spy on component methods, props, and lifecycle hooks to verify behaviour without modifying your component code.
+
+> **Setup requirement:** Load your components in a `beforeAll` block (typically in your setup file). The spy system patches `customElements.define`, so components must be registered after the test framework initializes.
+
+#### Method Spying
+
+Spy on methods while still calling the original implementation:
+
+```tsx
+const { root, spies } = await render(<my-button>Click me</my-button>, {
+  spyOn: {
+    methods: ['handleClick'],
+  },
+});
+
+// Trigger the method
+root.shadowRoot?.querySelector('button')?.click();
+
+// Assert the method was called
+expect(spies?.methods.handleClick).toHaveBeenCalledTimes(1);
+expect(spies?.methods.handleClick).toHaveBeenCalledWith(expect.objectContaining({ type: 'click' }));
+
+// Reset call history
+spies?.methods.handleClick.mockClear();
+```
+
+#### Method Mocking
+
+Replace methods with stubs that don't call the original implementation:
+
+```tsx
+// Mock a data fetching method to return test data
+const { root, spies, waitForChanges } = await render(<user-profile userId="123" />, {
+  spyOn: {
+    mocks: ['fetchUserData'], // Pure stub - no real API call
+  },
+});
+
+// Return stubbed data instead of hitting the API
+spies?.mocks.fetchUserData.mockResolvedValue({
+  id: '123',
+  name: 'Test User',
+  email: 'test@example.com',
+});
+
+// Trigger the fetch
+root.loadUser();
+await waitForChanges();
+
+// Verify the mock was called with correct args
+expect(spies?.mocks.fetchUserData).toHaveBeenCalledWith('123');
+
+// Component should render with stubbed data
+expect(root.shadowRoot?.querySelector('.name')?.textContent).toBe('Test User');
+```
+
+Access the original implementation to augment rather than fully replace:
+
+```tsx
+const { spies } = await render(<my-component />, {
+  spyOn: { mocks: ['fetchData'] },
+});
+
+// Wrap the original to add logging or modify behaviour
+spies?.mocks.fetchData.mockImplementation(async (...args) => {
+  console.log('Fetching data with args:', args);
+  const result = await spies?.mocks.fetchData.original?.(...args);
+  console.log('Got result:', result);
+  return result;
+});
+```
+
+#### Prop Spying
+
+Track when props are changed:
+
+```tsx
+const { spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+  spyOn: {
+    props: ['variant', 'disabled'],
+  },
+});
+
+await setProps({ variant: 'danger' });
+await waitForChanges();
+
+expect(spies?.props.variant).toHaveBeenCalledWith('danger');
+expect(spies?.props.variant).toHaveBeenCalledTimes(1);
+```
+
+#### Lifecycle Spying
+
+Spy on lifecycle methods. Methods that don't exist on the component are auto-stubbed:
+
+```tsx
+const { spies, setProps, waitForChanges } = await render(<my-button>Click me</my-button>, {
+  spyOn: {
+    lifecycle: ['componentWillLoad', 'componentDidLoad', 'componentWillRender', 'componentDidRender'],
+  },
+});
+
+// Lifecycle methods are called during initial render
+expect(spies?.lifecycle.componentWillLoad).toHaveBeenCalledTimes(1);
+expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(1);
+
+// Trigger a re-render
+await setProps({ variant: 'danger' });
+await waitForChanges();
+
+// Re-render lifecycle methods called again
+expect(spies?.lifecycle.componentWillRender).toHaveBeenCalledTimes(2);
+expect(spies?.lifecycle.componentDidRender).toHaveBeenCalledTimes(2);
+```
+
+#### Resetting Spies
+
+Reset all spies at once using `resetAll()`. This clears call histories AND resets mock implementations:
+
+```tsx
+const { root, spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
+  spyOn: {
+    methods: ['handleClick'],
+    mocks: ['fetchData'],
+    props: ['variant'],
+  },
+});
+
+// Set up a mock
+spies?.mocks.fetchData.mockReturnValue('mocked');
+
+// Trigger some calls
+root.shadowRoot?.querySelector('button')?.click();
+await setProps({ variant: 'danger' });
+
+// Reset everything
+spies?.resetAll();
+
+// Call histories cleared
+expect(spies?.methods.handleClick).toHaveBeenCalledTimes(0);
+expect(spies?.props.variant).toHaveBeenCalledTimes(0);
+
+// Mock implementations reset to default (returns undefined)
+expect(spies?.mocks.fetchData()).toBeUndefined();
+```
+
+#### Nested Components
+
+When the root element is not a custom element, or when you have multiple custom elements, use `getComponentSpies()` to retrieve spies for specific elements:
+
+```tsx
+import { render, getComponentSpies, h } from '@stencil/vitest';
+
+// Root is a div, not a custom element
+const { root } = await render(
+  <div>
+    <my-button>Click me</my-button>
+  </div>,
+  {
+    spyOn: { methods: ['handleClick'] },
+  },
+);
+
+// Query the nested custom element
+const button = root.querySelector('my-button') as HTMLElement;
+
+// Get spies for the nested element
+const buttonSpies = getComponentSpies(button);
+expect(buttonSpies?.methods.handleClick).toBeDefined();
+
+// Multiple instances have independent spies
+const { root: container } = await render(
+  <div>
+    <my-button class="a">A</my-button>
+    <my-button class="b">B</my-button>
+  </div>,
+  { spyOn: { methods: ['handleClick'] } },
+);
+
+const spiesA = getComponentSpies(container.querySelector('.a') as HTMLElement);
+const spiesB = getComponentSpies(container.querySelector('.b') as HTMLElement);
+
+// Each has its own spy instance
+container.querySelector('.a')?.shadowRoot?.querySelector('button')?.click();
+expect(spiesA?.methods.handleClick).toHaveBeenCalledTimes(1);
+expect(spiesB?.methods.handleClick).toHaveBeenCalledTimes(0);
+```
+
+#### Per-Component Configurations
+
+When rendering multiple component types, use the `components` property for tag-specific spy configs:
+
+```tsx
+import { render, getComponentSpies, h } from '@stencil/vitest';
+
+const { root } = await render(
+  <my-card cardTitle="Test">
+    <my-button slot="footer">Click me</my-button>
+  </my-card>,
+  {
+    spyOn: {
+      lifecycle: ['componentDidLoad'], // base - applies to all
+      components: {
+        'my-card': { props: ['cardTitle'] },
+        'my-button': { methods: ['handleClick'] },
+      },
+    },
+  },
+);
+
+const cardSpies = getComponentSpies(root);
+const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
+
+// Both get base lifecycle spy + their specific config
+expect(cardSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+expect(cardSpies?.props.cardTitle).toBeDefined();
+
+expect(buttonSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+expect(buttonSpies?.methods.handleClick).toBeDefined();
+```
+
 ### Event Testing
 
 Test custom events emitted by your components:

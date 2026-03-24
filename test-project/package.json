@@ -12,7 +12,7 @@
     "test": "stencil-test"
   },
   "dependencies": {
-    "@stencil/core": "^4.0.0"
+    "@stencil/core": "^4.43.3"
   },
   "devDependencies": {
     "@stencil/vitest": "workspace:*",

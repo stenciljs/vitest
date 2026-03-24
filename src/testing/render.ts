@@ -1,5 +1,6 @@
 import { render as stencilRender } from '@stencil/core';
 import type { RenderResult, EventSpy } from '../types.js';
+import { setRenderSpyConfig, getComponentSpies, type SpyConfig } from './spy-helper.js';
 
 interface RenderOptions {
   /**
@@ -16,6 +17,10 @@ interface RenderOptions {
    * Defaults to true.
    */
   waitForReady?: boolean;
+  /**
+   * Spy configuration for this render call. Spies on methods, props, and lifecycle hooks.
+   */
+  spyOn?: SpyConfig;
 }
 
 // Track event spies
@@ -130,6 +135,11 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
   }
   document.body.appendChild(container);
 
+  // Set per-render spy config before element creation
+  if (options.spyOn) {
+    setRenderSpyConfig(options.spyOn);
+  }
+
   if (typeof template === 'string') {
     // Handle string template - add as innerHTML
     container.innerHTML = template;
@@ -145,9 +155,20 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     throw new Error('Failed to render component');
   }
 
+  // Wait for custom element to be defined
+  const tagName = element.tagName.toLowerCase();
+  if (tagName.includes('-')) {
+    await customElements.whenDefined(tagName);
+  }
+
   // Wait for component to be ready
   if (typeof (element as any).componentOnReady === 'function') {
     await (element as any).componentOnReady();
+  }
+
+  // Clear per-render spy config after component is ready
+  if (options.spyOn) {
+    setRenderSpyConfig(null);
   }
 
   // Define waitForChanges first so we can use it in the ready check
@@ -255,6 +276,9 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     instance = (element as any).__stencil__getHostRef()?.$lazyInstance$ || element;
   }
 
+  // Get spies if spyOn option was used
+  const spies = options.spyOn ? getComponentSpies(element) : undefined;
+
   return {
     root: element,
     waitForChanges,
@@ -262,5 +286,6 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     setProps,
     unmount,
     spyOnEvent,
+    spies,
   };
 }
