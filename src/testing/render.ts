@@ -47,6 +47,76 @@ function isRealBrowser(): boolean {
 }
 
 /**
+ * Get the hydrated flag config, with defaults when not configured.
+ * Returns null if hydration is explicitly disabled.
+ */
+function getHydratedFlag(): { name: string; selector: 'class' | 'attribute' } | null {
+  // If global is defined, use it (could be null if explicitly disabled)
+  if (typeof __STENCIL_HYDRATED_FLAG__ !== 'undefined') {
+    return __STENCIL_HYDRATED_FLAG__;
+  }
+  // Default to 'hydrated' class when no config loaded
+  return { name: 'hydrated', selector: 'class' };
+}
+
+/**
+ * Find the first custom element (tag contains '-') in the tree.
+ * If the element itself is a custom element, returns it.
+ * Otherwise walks down to find the topmost custom element child.
+ */
+function findCustomElement(element: Element): Element | null {
+  if (element.tagName.includes('-')) {
+    return element;
+  }
+  // Breadth-first search for first custom element
+  const queue: Element[] = Array.from(element.children);
+  while (queue.length > 0) {
+    const child = queue.shift()!;
+    if (child.tagName.includes('-')) {
+      return child;
+    }
+    queue.push(...Array.from(child.children));
+  }
+  return null;
+}
+
+/**
+ * Wait for element to be hydrated based on Stencil's hydrated flag config.
+ * Checks for the hydrated class or attribute as configured.
+ * Returns immediately if hydration is disabled (flag is null).
+ */
+async function waitForHydrated(element: Element, timeout = 5000): Promise<void> {
+  const flag = getHydratedFlag();
+
+  // If hydration is disabled, skip this check
+  if (flag === null) {
+    return;
+  }
+
+  // Find the custom element to check - hydrated flag is applied to the component, not wrappers
+  const customElement = findCustomElement(element);
+  if (!customElement) {
+    return;
+  }
+
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    const isHydrated =
+      flag.selector === 'attribute'
+        ? customElement.hasAttribute(flag.name)
+        : customElement.classList.contains(flag.name);
+
+    if (isHydrated) {
+      return;
+    }
+
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  // Don't throw - component might not use hydration or might be ready without flag
+}
+
+/**
  * Poll until element has dimensions (is rendered/visible in real browser).
  * Accepts either an Element or a CSS selector string.
  * If a selector is provided, waits for the element to appear in the DOM first.
@@ -205,10 +275,9 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
 
   // Wait for component to be fully rendered if requested (default: true)
   if (options.waitForReady !== false) {
-    if (isRealBrowser()) {
-      // In real browser, poll until element has dimensions
-      await waitForStable(element);
-    }
+    // Wait for Stencil's hydration flag (skipped if hydration disabled)
+    await waitForHydrated(element);
+
     // Always wait for Stencil's update cycle to complete
     await waitForChanges();
   }

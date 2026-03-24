@@ -5,6 +5,7 @@ import {
   getStencilSrcDir,
   getStencilOutputDirs,
   getStencilResolveAliases,
+  getStencilHydratedFlag,
 } from './setup/config-loader.js';
 import type { Config as StencilConfig } from '@stencil/core/internal';
 
@@ -149,6 +150,7 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
     __STENCIL_PROD__: JSON.stringify(process.env.STENCIL_PROD === 'true'),
     __STENCIL_SERVE__: JSON.stringify(process.env.STENCIL_SERVE === 'true'),
     __STENCIL_PORT__: JSON.stringify(process.env.STENCIL_PORT || ''),
+    __STENCIL_HYDRATED_FLAG__: JSON.stringify(getStencilHydratedFlag(stencilConfig)),
   };
 
   if (!result.define) {
@@ -382,6 +384,7 @@ function enhanceProject(project: any, stencilConfig?: StencilConfig): any {
     __STENCIL_PROD__: JSON.stringify(process.env.STENCIL_PROD === 'true'),
     __STENCIL_SERVE__: JSON.stringify(process.env.STENCIL_SERVE === 'true'),
     __STENCIL_PORT__: JSON.stringify(process.env.STENCIL_PORT || ''),
+    __STENCIL_HYDRATED_FLAG__: JSON.stringify(getStencilHydratedFlag(stencilConfig)),
   };
 
   if (!enhanced.define) {
