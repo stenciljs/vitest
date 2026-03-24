@@ -292,13 +292,16 @@ describe('spy-helper', () => {
 
   describe('resetAll', () => {
     it('resets all spy call histories and implementations', async () => {
-      const { root, spies, setProps, waitForChanges } = await render(<my-button variant="primary">Click me</my-button>, {
-        spyOn: {
-          methods: ['handleClick'],
-          props: ['variant'],
-          lifecycle: ['componentDidRender'],
+      const { root, spies, setProps, waitForChanges } = await render(
+        <my-button variant="primary">Click me</my-button>,
+        {
+          spyOn: {
+            methods: ['handleClick'],
+            props: ['variant'],
+            lifecycle: ['componentDidRender'],
+          },
         },
-      });
+      );
 
       // Trigger some calls
       root.shadowRoot?.querySelector('button')?.click();

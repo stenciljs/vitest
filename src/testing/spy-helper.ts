@@ -3,7 +3,7 @@ import { vi, type Mock } from 'vitest';
 /**
  * Base configuration for what to spy on in a component
  */
-export interface SpyConfigBase {
+interface SpyConfigBase {
   /**
    * Method names to spy on (calls original implementation)
    */
@@ -47,7 +47,7 @@ export interface SpyConfig extends SpyConfigBase {
 /**
  * A mock with access to the original implementation
  */
-export interface MockWithOriginal extends Mock {
+interface MockWithOriginal extends Mock {
   /**
    * The original method implementation, bound to the component instance.
    * Call this within mockImplementation to augment rather than replace.
@@ -104,8 +104,9 @@ function resolveConfigForTag(config: SpyConfig, tagName: string): SpyConfigBase 
   const tagConfig = config.components?.[tagLower];
 
   // Extract base config (everything except `components`)
-  const { components, ...baseConfig } = config;
-  const hasBaseConfig = baseConfig.methods?.length || baseConfig.mocks?.length || baseConfig.props?.length || baseConfig.lifecycle?.length;
+  const { components: _components, ...baseConfig } = config;
+  const hasBaseConfig =
+    baseConfig.methods?.length || baseConfig.mocks?.length || baseConfig.props?.length || baseConfig.lifecycle?.length;
 
   if (!tagConfig && !hasBaseConfig) {
     return null; // No config applies to this tag

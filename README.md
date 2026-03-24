@@ -366,39 +366,35 @@ expect(spiesB?.methods.handleClick).toHaveBeenCalledTimes(0);
 
 #### Per-Component Configurations
 
-When rendering multiple different component types, use the `components` property to specify different spy configs per tag:
+When rendering multiple component types, use the `components` property for tag-specific spy configs:
 
 ```tsx
+import { render, getComponentSpies, h } from '@stencil/vitest';
+
 const { root } = await render(
-  <my-form>
-    <my-input name="email" />
-    <my-button type="submit">Submit</my-button>
-  </my-form>,
+  <my-card cardTitle="Test">
+    <my-button slot="footer">Click me</my-button>
+  </my-card>,
   {
     spyOn: {
-      // Base config applies to all components
-      lifecycle: ['componentDidLoad'],
-      // Per-component overrides
+      lifecycle: ['componentDidLoad'], // base - applies to all
       components: {
-        'my-form': { methods: ['handleSubmit', 'validate'] },
-        'my-input': { props: ['value'], methods: ['focus'] },
+        'my-card': { props: ['cardTitle'] },
         'my-button': { methods: ['handleClick'] },
       },
     },
   },
 );
 
-// Get spies for each component
-const formSpies = getComponentSpies(root);
-const inputSpies = getComponentSpies(root.querySelector('my-input') as HTMLElement);
+const cardSpies = getComponentSpies(root);
 const buttonSpies = getComponentSpies(root.querySelector('my-button') as HTMLElement);
 
-// Each has the base lifecycle spy plus their specific spies
-expect(formSpies?.lifecycle.componentDidLoad).toBeDefined();
-expect(formSpies?.methods.handleSubmit).toBeDefined();
+// Both get base lifecycle spy + their specific config
+expect(cardSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+expect(cardSpies?.props.cardTitle).toBeDefined();
 
-expect(inputSpies?.lifecycle.componentDidLoad).toBeDefined();
-expect(inputSpies?.props.value).toBeDefined();
+expect(buttonSpies?.lifecycle.componentDidLoad).toHaveBeenCalled();
+expect(buttonSpies?.methods.handleClick).toBeDefined();
 ```
 
 ### Event Testing
