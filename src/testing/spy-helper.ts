@@ -9,9 +9,18 @@ interface SpyConfigBase {
    */
   methods?: string[];
   /**
-   * Method names to mock (doesn't call original)
+   * Pre-configured mocks to replace methods. The mock is applied before lifecycle runs,
+   * allowing you to control return values for methods called during initialization.
+   * @example
+   * ```ts
+   * const loadUserMock = vi.fn().mockResolvedValue({ id: 1, name: 'Test' });
+   * const { root } = await render(<my-component />, {
+   *   spyOn: { mocks: { loadUser: loadUserMock } }
+   * });
+   * expect(loadUserMock).toHaveBeenCalled();
+   * ```
    */
-  mocks?: string[];
+  mocks?: Record<string, Mock>;
   /**
    * Property names to spy on
    */
@@ -106,7 +115,10 @@ function resolveConfigForTag(config: SpyConfig, tagName: string): SpyConfigBase 
   // Extract base config (everything except `components`)
   const { components: _components, ...baseConfig } = config;
   const hasBaseConfig =
-    baseConfig.methods?.length || baseConfig.mocks?.length || baseConfig.props?.length || baseConfig.lifecycle?.length;
+    baseConfig.methods?.length ||
+    (baseConfig.mocks && Object.keys(baseConfig.mocks).length) ||
+    baseConfig.props?.length ||
+    baseConfig.lifecycle?.length;
 
   if (!tagConfig && !hasBaseConfig) {
     return null; // No config applies to this tag
@@ -120,10 +132,10 @@ function resolveConfigForTag(config: SpyConfig, tagName: string): SpyConfigBase 
     return tagConfig; // Only tag-specific config
   }
 
-  // Merge: tag-specific arrays are added to base arrays (not replaced)
+  // Merge: tag-specific config extends base config
   return {
     methods: [...(baseConfig.methods || []), ...(tagConfig.methods || [])],
-    mocks: [...(baseConfig.mocks || []), ...(tagConfig.mocks || [])],
+    mocks: { ...(baseConfig.mocks || {}), ...(tagConfig.mocks || {}) },
     props: [...(baseConfig.props || []), ...(tagConfig.props || [])],
     lifecycle: [...(baseConfig.lifecycle || []), ...(tagConfig.lifecycle || [])],
   };
@@ -188,20 +200,20 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
     }
   }
 
-  // Mock methods (pure stub, no call-through by default, but original is accessible)
+  // Mock methods (use pre-configured mocks, original is accessible)
   if (config.mocks) {
-    for (const methodName of config.mocks) {
+    for (const [methodName, mock] of Object.entries(config.mocks)) {
       const original = target[methodName];
-      const spy = vi.fn() as MockWithOriginal & { __isSpy?: boolean };
-      spy.__isSpy = true;
+      const mockWithOriginal = mock as MockWithOriginal & { __isSpy?: boolean };
+      mockWithOriginal.__isSpy = true;
       // Store the original so users can call it if they want to augment rather than replace
       if (typeof original === 'function') {
-        spy.original = (...args: any[]) => original.apply(target, args);
+        mockWithOriginal.original = (...args: any[]) => original.apply(target, args);
       }
-      spies.mocks[methodName] = spy;
+      spies.mocks[methodName] = mockWithOriginal;
 
       Object.defineProperty(target, methodName, {
-        value: spy,
+        value: mockWithOriginal,
         writable: true,
         configurable: true,
       });
