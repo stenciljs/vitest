@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/stenciljs/vitest/compare/v1.9.0...v1.9.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* fix pure node tests (check for `customElements`) ([#42](https://github.com/stenciljs/vitest/issues/42)) ([2b29190](https://github.com/stenciljs/vitest/commit/2b2919057fefd2f9228f97544033f4015a12d47e))
+
 # [1.9.0](https://github.com/stenciljs/vitest/compare/v1.8.3...v1.9.0) (2026-03-24)
 
 
