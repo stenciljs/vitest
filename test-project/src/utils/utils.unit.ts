@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from '@stencil/vitest';
 import { formatDate, capitalize, slugify } from '@utils';
 
 describe('utils', () => {

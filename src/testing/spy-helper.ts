@@ -149,8 +149,8 @@ export function setRenderSpyConfig(config: SpyConfig | null): void {
   pendingRenderConfig = config;
 }
 
-// Store original define before patching
-const origDefine = customElements.define.bind(customElements);
+// Store original define before patching (only in browser/jsdom environments)
+const origDefine = typeof customElements !== 'undefined' ? customElements.define.bind(customElements) : undefined;
 
 /**
  * Apply spies to a target instance (shared logic)
@@ -276,55 +276,57 @@ function applySpies(target: any, config: SpyConfig): ComponentSpies {
   return spies;
 }
 
-// Patch customElements.define to intercept component registration
-customElements.define = function (name: string, ctor: CustomElementConstructor, options?: ElementDefinitionOptions) {
-  const lc = name.toLowerCase();
-  const OrigCtor = ctor;
+// Patch customElements.define to intercept component registration (only in browser/jsdom environments)
+if (typeof customElements !== 'undefined' && origDefine) {
+  customElements.define = function (name: string, ctor: CustomElementConstructor, options?: ElementDefinitionOptions) {
+    const lc = name.toLowerCase();
+    const OrigCtor = ctor;
 
-  // Wrap ALL components to enable per-render spies without module-level registration
-  const Wrapped = class extends OrigCtor {
-    constructor(...args: any[]) {
-      super(...args);
+    // Wrap ALL components to enable per-render spies without module-level registration
+    const Wrapped = class extends OrigCtor {
+      constructor(...args: any[]) {
+        super(...args);
 
-      // Check for spy config: per-render takes priority, then module-level
-      // Capture config now, at constructor time (before async callbacks)
-      const baseConfig = pendingRenderConfig || spyTargets[lc];
-      if (!baseConfig) return; // No spying configured, quick exit
+        // Check for spy config: per-render takes priority, then module-level
+        // Capture config now, at constructor time (before async callbacks)
+        const baseConfig = pendingRenderConfig || spyTargets[lc];
+        if (!baseConfig) return; // No spying configured, quick exit
 
-      // Resolve config for this specific tag (handles per-component overrides)
-      const configToUse = resolveConfigForTag(baseConfig, lc);
-      if (!configToUse) return; // No config applies to this tag
+        // Resolve config for this specific tag (handles per-component overrides)
+        const configToUse = resolveConfigForTag(baseConfig, lc);
+        if (!configToUse) return; // No config applies to this tag
 
-      // After super(), registerHost has run and we have access to hostRef
-      const hostRef = (this as any).__stencil__getHostRef?.();
+        // After super(), registerHost has run and we have access to hostRef
+        const hostRef = (this as any).__stencil__getHostRef?.();
 
-      if (hostRef && hostRef.$fetchedCbList$) {
-        // Lazy-load path: Use $fetchedCbList$ to apply spies after constructor but before render
-        const element = this as unknown as HTMLElement;
-        // Capture config in closure for when callback executes
-        const capturedConfig = configToUse;
-        hostRef.$fetchedCbList$.push(() => {
-          const instance = hostRef.$lazyInstance$;
-          if (instance) {
-            const spies = applySpies(instance, capturedConfig);
-            elementSpies.set(element, spies);
-          }
-        });
-      } else if (hostRef) {
-        // Custom-elements output with Stencil runtime: element IS the instance
-        // Apply spies immediately since there's no lazy loading
-        const spies = applySpies(this, configToUse);
-        elementSpies.set(this as unknown as HTMLElement, spies);
-      } else {
-        // Custom-elements output path: element IS the instance
-        const spies = applySpies(this, configToUse);
-        elementSpies.set(this as unknown as HTMLElement, spies);
+        if (hostRef && hostRef.$fetchedCbList$) {
+          // Lazy-load path: Use $fetchedCbList$ to apply spies after constructor but before render
+          const element = this as unknown as HTMLElement;
+          // Capture config in closure for when callback executes
+          const capturedConfig = configToUse;
+          hostRef.$fetchedCbList$.push(() => {
+            const instance = hostRef.$lazyInstance$;
+            if (instance) {
+              const spies = applySpies(instance, capturedConfig);
+              elementSpies.set(element, spies);
+            }
+          });
+        } else if (hostRef) {
+          // Custom-elements output with Stencil runtime: element IS the instance
+          // Apply spies immediately since there's no lazy loading
+          const spies = applySpies(this, configToUse);
+          elementSpies.set(this as unknown as HTMLElement, spies);
+        } else {
+          // Custom-elements output path: element IS the instance
+          const spies = applySpies(this, configToUse);
+          elementSpies.set(this as unknown as HTMLElement, spies);
+        }
       }
-    }
-  };
+    };
 
-  return origDefine.call(customElements, name, Wrapped, options);
-};
+    return origDefine.call(customElements, name, Wrapped, options);
+  };
+}
 
 /**
  * Get the spies for a rendered component instance.
