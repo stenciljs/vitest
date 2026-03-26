@@ -6,6 +6,31 @@ import { extname, join } from 'path';
 import { createJiti } from 'jiti';
 
 /**
+ * Creates a clean environment for spawning npm/npx commands.
+ * Filters out pnpm-specific npm_config_* variables that npm doesn't recognize,
+ * which cause warnings like "Unknown env config" in npm 10+.
+ */
+function getCleanNpmEnv(extraEnv: Record<string, string> = {}): NodeJS.ProcessEnv {
+  const pnpmOnlyConfigs = new Set([
+    'npm_config_npm-globalconfig',
+    'npm_config_verify-deps-before-run',
+    'npm_config_catalog',
+    'npm_config__jsr-registry',
+    'npm_config_only-built-dependencies',
+    'npm_globalconfig_only-built-dependencies',
+  ]);
+
+  const cleanEnv: NodeJS.ProcessEnv = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!pnpmOnlyConfigs.has(key)) {
+      cleanEnv[key] = value;
+    }
+  }
+
+  return { ...cleanEnv, ...extraEnv };
+}
+
+/**
  * stencil-test - A wrapper that integrates Stencil build with Vitest testing.
  *
  * Default behavior (no flags):
@@ -334,14 +359,13 @@ function runTests() {
     cwd,
     stdio: 'inherit',
     shell: true,
-    env: {
-      ...process.env,
+    env: getCleanNpmEnv({
       NODE_ENV: 'test',
       // Expose CLI flags to tests via environment variables
       STENCIL_PROD: args.prod ? 'true' : '',
       STENCIL_SERVE: args.serve ? 'true' : '',
       STENCIL_PORT: args.port || '',
-    },
+    }),
   });
 
   vitestProcess.on('exit', (code) => {
@@ -799,6 +823,7 @@ process.on('SIGTERM', () => cleanup());
   stencilProcess = spawn('npx', stencilArgs, {
     cwd,
     shell: true,
+    env: getCleanNpmEnv(),
   });
 
   // Pipe stdout and watch for build completion
