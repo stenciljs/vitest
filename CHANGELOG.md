@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/stenciljs/vitest/compare/v1.9.1...v1.9.2) (2026-03-26)
+
+
+### Bug Fixes
+
+* hush npm warnings re pnpm env vars ([#43](https://github.com/stenciljs/vitest/issues/43)) ([30d743e](https://github.com/stenciljs/vitest/commit/30d743e12ad0e684d6681c0bd5ba87abac8632ce))
+
 ## [1.9.1](https://github.com/stenciljs/vitest/compare/v1.9.0...v1.9.1) (2026-03-25)
 
 
