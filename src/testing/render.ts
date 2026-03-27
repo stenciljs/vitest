@@ -277,7 +277,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     await waitForChanges();
   }
 
-   // Clear per-render spy config after component is ready
+  // Clear per-render spy config after component is ready
   if (options.spyOn) {
     setRenderSpyConfig(null);
   }
