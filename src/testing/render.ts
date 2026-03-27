@@ -225,22 +225,6 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     throw new Error('Failed to render component');
   }
 
-  // Wait for custom element to be defined
-  const tagName = element.tagName.toLowerCase();
-  if (tagName.includes('-')) {
-    await customElements.whenDefined(tagName);
-  }
-
-  // Wait for component to be ready
-  if (typeof (element as any).componentOnReady === 'function') {
-    await (element as any).componentOnReady();
-  }
-
-  // Clear per-render spy config after component is ready
-  if (options.spyOn) {
-    setRenderSpyConfig(null);
-  }
-
   // Define waitForChanges first so we can use it in the ready check
   function waitForChanges(documentElement: Element = element) {
     return new Promise<void>((resolve) => {
@@ -275,11 +259,27 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
 
   // Wait for component to be fully rendered if requested (default: true)
   if (options.waitForReady !== false) {
+    // Wait for custom element to be defined
+    const tagName = element.tagName.toLowerCase();
+    if (tagName.includes('-')) {
+      await customElements.whenDefined(tagName);
+    }
+
+    // Wait for component to be ready
+    if (typeof (element as any).componentOnReady === 'function') {
+      await (element as any).componentOnReady();
+    }
+
     // Wait for Stencil's hydration flag (skipped if hydration disabled)
     await waitForHydrated(element);
 
-    // Always wait for Stencil's update cycle to complete
+    // Wait for Stencil's update cycle to complete
     await waitForChanges();
+  }
+
+   // Clear per-render spy config after component is ready
+  if (options.spyOn) {
+    setRenderSpyConfig(null);
   }
 
   const setProps = async (newProps: Record<string, any>) => {
