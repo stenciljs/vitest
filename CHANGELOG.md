@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/stenciljs/vitest/compare/v1.9.2...v1.9.3) (2026-03-27)
+
+
+### Bug Fixes
+
+* `waitForReady` skips `whenDefined` and `componentOnReady` checks ([#44](https://github.com/stenciljs/vitest/issues/44)) ([9b5009e](https://github.com/stenciljs/vitest/commit/9b5009e2f2c030d4e5298bf775da2cdd58e85311))
+
 ## [1.9.2](https://github.com/stenciljs/vitest/compare/v1.9.1...v1.9.2) (2026-03-26)
 
 
