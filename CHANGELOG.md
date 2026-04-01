@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/stenciljs/vitest/compare/v1.9.3...v1.10.0) (2026-04-01)
+
+
+### Features
+
+* support v5 ([#46](https://github.com/stenciljs/vitest/issues/46)) ([c57fa27](https://github.com/stenciljs/vitest/commit/c57fa27fc65f0311a75fbbe19f5f8c19be2bdf76))
+
 ## [1.9.3](https://github.com/stenciljs/vitest/compare/v1.9.2...v1.9.3) (2026-03-27)
 
 
