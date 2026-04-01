@@ -13,8 +13,10 @@
   },
   "files": [
     "index.mjs",
-    "index.d.ts"
+    "index.d.ts",
+    "README.md"
   ],
+  "license": "MIT",
   "keywords": [
     "vitest",
     "environment",
