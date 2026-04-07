@@ -212,10 +212,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
 
   // Capture lifecycle errors (e.g. throws in componentWillLoad).
   // Stencil's safeCall() catches all lifecycle hook errors and routes them to
-  // console.error instead of re-throwing. When using a dist-compiled component
-  // bundle, setErrorHandler() targets a different Stencil module instance and
-  // has no effect, so we intercept console.error directly — both instances
-  // share the same global console.
+  // console.error instead of re-throwing.
   let lifecycleError: unknown;
   const origConsoleError = console.error;
   console.error = (err: unknown, ...rest: unknown[]) => {
