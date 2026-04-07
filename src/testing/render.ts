@@ -210,6 +210,21 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     setRenderSpyConfig(options.spyOn);
   }
 
+  // Capture lifecycle errors (e.g. throws in componentWillLoad).
+  // Stencil's safeCall() catches all lifecycle hook errors and routes them to
+  // console.error instead of re-throwing. When using a dist-compiled component
+  // bundle, setErrorHandler() targets a different Stencil module instance and
+  // has no effect, so we intercept console.error directly — both instances
+  // share the same global console.
+  let lifecycleError: unknown;
+  const origConsoleError = console.error;
+  console.error = (err: unknown, ...rest: unknown[]) => {
+    if (err instanceof Error && lifecycleError === undefined) {
+      lifecycleError = err;
+    }
+    origConsoleError(err, ...rest);
+  };
+
   if (typeof template === 'string') {
     // Handle string template - add as innerHTML
     container.innerHTML = template;
@@ -275,6 +290,14 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
 
     // Wait for Stencil's update cycle to complete
     await waitForChanges();
+  }
+
+  // Restore console.error now that the lifecycle is done
+  console.error = origConsoleError;
+
+  // Re-throw any lifecycle error that Stencil's safeCall swallowed
+  if (lifecycleError !== undefined) {
+    throw lifecycleError;
   }
 
   // Clear per-render spy config after component is ready

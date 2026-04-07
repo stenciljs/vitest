@@ -7,6 +7,16 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     /**
+     * A component that throws in componentWillLoad when a required prop is missing.
+     * Used to test that lifecycle hooks are called and errors propagate correctly.
+     */
+    interface LifecycleThrow {
+        /**
+          * Required label prop - throws if not provided
+         */
+        "label": string;
+    }
+    /**
      * A simple button component for testing
      */
     interface MyButton {
@@ -59,6 +69,16 @@ export interface MyButtonCustomEvent<T> extends CustomEvent<T> {
     target: HTMLMyButtonElement;
 }
 declare global {
+    /**
+     * A component that throws in componentWillLoad when a required prop is missing.
+     * Used to test that lifecycle hooks are called and errors propagate correctly.
+     */
+    interface HTMLLifecycleThrowElement extends Components.LifecycleThrow, HTMLStencilElement {
+    }
+    var HTMLLifecycleThrowElement: {
+        prototype: HTMLLifecycleThrowElement;
+        new (): HTMLLifecycleThrowElement;
+    };
     interface HTMLMyButtonElementEventMap {
         "buttonClick": MouseEvent;
     }
@@ -101,12 +121,23 @@ declare global {
         new (): HTMLNonShadowComponentElement;
     };
     interface HTMLElementTagNameMap {
+        "lifecycle-throw": HTMLLifecycleThrowElement;
         "my-button": HTMLMyButtonElement;
         "my-card": HTMLMyCardElement;
         "non-shadow-component": HTMLNonShadowComponentElement;
     }
 }
 declare namespace LocalJSX {
+    /**
+     * A component that throws in componentWillLoad when a required prop is missing.
+     * Used to test that lifecycle hooks are called and errors propagate correctly.
+     */
+    interface LifecycleThrow {
+        /**
+          * Required label prop - throws if not provided
+         */
+        "label"?: string;
+    }
     /**
      * A simple button component for testing
      */
@@ -159,6 +190,9 @@ declare namespace LocalJSX {
     interface NonShadowComponent {
     }
 
+    interface LifecycleThrowAttributes {
+        "label": string;
+    }
     interface MyButtonAttributes {
         "variant": 'primary' | 'secondary' | 'danger';
         "disabled": boolean;
@@ -171,6 +205,7 @@ declare namespace LocalJSX {
     }
 
     interface IntrinsicElements {
+        "lifecycle-throw": Omit<LifecycleThrow, keyof LifecycleThrowAttributes> & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes]?: LifecycleThrow[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `attr:${K}`]?: LifecycleThrowAttributes[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `prop:${K}`]?: LifecycleThrow[K] };
         "my-button": Omit<MyButton, keyof MyButtonAttributes> & { [K in keyof MyButton & keyof MyButtonAttributes]?: MyButton[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `attr:${K}`]?: MyButtonAttributes[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `prop:${K}`]?: MyButton[K] };
         "my-card": Omit<MyCard, keyof MyCardAttributes> & { [K in keyof MyCard & keyof MyCardAttributes]?: MyCard[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `attr:${K}`]?: MyCardAttributes[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `prop:${K}`]?: MyCard[K] };
         "non-shadow-component": NonShadowComponent;
@@ -180,6 +215,11 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            /**
+             * A component that throws in componentWillLoad when a required prop is missing.
+             * Used to test that lifecycle hooks are called and errors propagate correctly.
+             */
+            "lifecycle-throw": LocalJSX.IntrinsicElements["lifecycle-throw"] & JSXBase.HTMLAttributes<HTMLLifecycleThrowElement>;
             /**
              * A simple button component for testing
              */
