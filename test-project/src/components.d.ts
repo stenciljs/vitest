@@ -56,6 +56,17 @@ export namespace Components {
         "interactive": boolean;
     }
     /**
+     * A label component that formats its value using the capitalize utility.
+     * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
+     */
+    interface MyLabel {
+        /**
+          * Raw text to display — run through `capitalize()` before rendering
+          * @default ''
+         */
+        "value": string;
+    }
+    /**
      * Test component with scoped encapsulation (non-shadow) and slots
      * Stencil polyfills slot behavior and protects the component by monkey-patching
      * childNodes, children, firstChild, lastChild to only return lightDOM
@@ -109,6 +120,16 @@ declare global {
         new (): HTMLMyCardElement;
     };
     /**
+     * A label component that formats its value using the capitalize utility.
+     * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
+     */
+    interface HTMLMyLabelElement extends Components.MyLabel, HTMLStencilElement {
+    }
+    var HTMLMyLabelElement: {
+        prototype: HTMLMyLabelElement;
+        new (): HTMLMyLabelElement;
+    };
+    /**
      * Test component with scoped encapsulation (non-shadow) and slots
      * Stencil polyfills slot behavior and protects the component by monkey-patching
      * childNodes, children, firstChild, lastChild to only return lightDOM
@@ -124,6 +145,7 @@ declare global {
         "lifecycle-throw": HTMLLifecycleThrowElement;
         "my-button": HTMLMyButtonElement;
         "my-card": HTMLMyCardElement;
+        "my-label": HTMLMyLabelElement;
         "non-shadow-component": HTMLNonShadowComponentElement;
     }
 }
@@ -182,6 +204,17 @@ declare namespace LocalJSX {
         "interactive"?: boolean;
     }
     /**
+     * A label component that formats its value using the capitalize utility.
+     * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
+     */
+    interface MyLabel {
+        /**
+          * Raw text to display — run through `capitalize()` before rendering
+          * @default ''
+         */
+        "value"?: string;
+    }
+    /**
      * Test component with scoped encapsulation (non-shadow) and slots
      * Stencil polyfills slot behavior and protects the component by monkey-patching
      * childNodes, children, firstChild, lastChild to only return lightDOM
@@ -203,11 +236,15 @@ declare namespace LocalJSX {
         "elevation": 0 | 1 | 2 | 3;
         "interactive": boolean;
     }
+    interface MyLabelAttributes {
+        "value": string;
+    }
 
     interface IntrinsicElements {
         "lifecycle-throw": Omit<LifecycleThrow, keyof LifecycleThrowAttributes> & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes]?: LifecycleThrow[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `attr:${K}`]?: LifecycleThrowAttributes[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `prop:${K}`]?: LifecycleThrow[K] };
         "my-button": Omit<MyButton, keyof MyButtonAttributes> & { [K in keyof MyButton & keyof MyButtonAttributes]?: MyButton[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `attr:${K}`]?: MyButtonAttributes[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `prop:${K}`]?: MyButton[K] };
         "my-card": Omit<MyCard, keyof MyCardAttributes> & { [K in keyof MyCard & keyof MyCardAttributes]?: MyCard[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `attr:${K}`]?: MyCardAttributes[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `prop:${K}`]?: MyCard[K] };
+        "my-label": Omit<MyLabel, keyof MyLabelAttributes> & { [K in keyof MyLabel & keyof MyLabelAttributes]?: MyLabel[K] } & { [K in keyof MyLabel & keyof MyLabelAttributes as `attr:${K}`]?: MyLabelAttributes[K] } & { [K in keyof MyLabel & keyof MyLabelAttributes as `prop:${K}`]?: MyLabel[K] };
         "non-shadow-component": NonShadowComponent;
     }
 }
@@ -228,6 +265,11 @@ declare module "@stencil/core" {
              * A card component with header, content, and footer slots
              */
             "my-card": LocalJSX.IntrinsicElements["my-card"] & JSXBase.HTMLAttributes<HTMLMyCardElement>;
+            /**
+             * A label component that formats its value using the capitalize utility.
+             * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
+             */
+            "my-label": LocalJSX.IntrinsicElements["my-label"] & JSXBase.HTMLAttributes<HTMLMyLabelElement>;
             /**
              * Test component with scoped encapsulation (non-shadow) and slots
              * Stencil polyfills slot behavior and protects the component by monkey-patching

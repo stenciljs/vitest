@@ -1,4 +1,5 @@
 import { defineVitestConfig } from '@stencil/vitest/config';
+import { stencilVitestPlugin } from '@stencil/vitest/plugin';
 import { playwright } from '@vitest/browser-playwright';
 import path from 'node:path';
 
@@ -16,8 +17,19 @@ export default defineVitestConfig({
             '**/*-jsdom.spec.{ts,tsx}',
             '**/*-happy.spec.{ts,tsx}',
             '**/*.happy.spec.{ts,tsx}',
+            '**/*.plugin.spec.{ts,tsx}',
           ],
           setupFiles: ['./vitest-setup-dist.ts'],
+        },
+      },
+      {
+        plugins: [stencilVitestPlugin()],
+        test: {
+          name: 'plugin',
+          environment: 'stencil',
+          include: ['**/*.plugin.spec.{ts,tsx}'],
+          // No dist setup file — the plugin's customElements.define() output
+          // registers each component the moment its source file is imported.
         },
       },
       {
