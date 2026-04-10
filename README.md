@@ -479,8 +479,7 @@ With the plugin active, import the component source directly in your test. The p
 ```tsx
 // my-label.plugin.spec.tsx
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@stencil/vitest';
-import { h } from '@stencil/core';
+import { render, h } from '@stencil/vitest';
 
 // vi.mock() is hoisted — the mock is in place before any imports resolve
 vi.mock('../utils/index.js', () => ({
