@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/stenciljs/vitest/compare/v1.11.0...v1.11.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* sort html attributes ([#51](https://github.com/stenciljs/vitest/issues/51)) ([573d009](https://github.com/stenciljs/vitest/commit/573d009029ab3c03dd05b24eda452a6a47b3bf3c))
+
 # [1.11.0](https://github.com/stenciljs/vitest/compare/v1.10.0...v1.11.0) (2026-04-10)
 
 
