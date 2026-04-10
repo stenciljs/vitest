@@ -440,6 +440,82 @@ expect(clickSpy.firstEvent?.detail).toEqual({ buttonId: 'my-button' });
 expect(clickSpy.lastEvent?.detail).toEqual({ buttonId: 'my-button' });
 ```
 
+## Stencil Vitest Plugin
+
+The recommended testing approach in this package is to test against **pre-built dist outputs** — Stencil compiles your components once and tests run against those bundles. This is fast and reliable, but it does mean Vitest never sees individual component source files as discrete modules. As a result, `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
+
+`stencilVitestPlugin` solves this by hooking into Vite's transform pipeline. Every `.tsx` file containing Stencil decorators is compiled on-the-fly via `transpileSync` before Vitest imports it, using `componentExport: 'customelement'`. This means each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
+
+### Setup
+
+```typescript
+// vitest.config.ts
+import { defineVitestConfig } from '@stencil/vitest/config';
+import { stencilVitestPlugin } from '@stencil/vitest/plugin';
+
+export default defineVitestConfig({
+  stencilConfig: './stencil.config.ts',
+  test: {
+    projects: [
+      {
+        plugins: [stencilVitestPlugin()],
+        test: {
+          name: 'plugin',
+          environment: 'stencil',
+          include: ['src/**/*.plugin.spec.{ts,tsx}'],
+          // No dist setup file needed — each component source file registers
+          // itself via customElements.define() the moment it is imported.
+        },
+      },
+    ],
+  },
+});
+```
+
+### Mocking component dependencies
+
+With the plugin active, import the component source directly in your test. The plugin compiles it on-the-fly and the `customElements.define()` call at the end of the transformed output registers the element immediately.
+
+```tsx
+// my-label.plugin.spec.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, h } from '@stencil/vitest';
+
+// vi.mock() is hoisted — the mock is in place before any imports resolve
+vi.mock('../utils/index.js', () => ({
+  capitalize: vi.fn((s: string) => `[mocked:${s}]`),
+}));
+
+// Importing the source file triggers the on-the-fly compile + define
+import './my-label.tsx';
+import { capitalize } from '../utils/index.js';
+
+it('renders using the mocked utility', async () => {
+  vi.mocked(capitalize).mockReturnValue('Intercepted');
+
+  const { root } = await render(<my-label value="hello" />);
+
+  expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('Intercepted');
+  expect(capitalize).toHaveBeenCalledWith('hello');
+});
+```
+
+### Limitations
+
+#### Class inheritance
+
+In Stencil v4 `transpileSync` (used within the plugin) is a single-file compiler. When a component class `extends` a base class that lives in a separate file, `transpileSync` cannot follow the import to merge the parent's metadata and will throw an error.
+
+```tsx
+// ❌ Will fail — base class is in a separate file
+import { FormBase } from './form-base.js';
+
+@Component({ tag: 'my-input', shadow: true })
+export class MyInput extends FormBase { ... }
+```
+
+> This limitation is specific to v4. Stencil v5's compiler can resolve multi-file inheritance chains.
+
 ## Snapshots
 
 The package includes a custom snapshot serializer for Stencil components that properly handles shadow DOM:

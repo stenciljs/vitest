@@ -36,6 +36,10 @@
       "types": "./dist/setup/happy-dom-setup.d.ts",
       "import": "./dist/setup/happy-dom-setup.js"
     },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js"
+    },
     "./vitest": {
       "types": "./dist/environments/stencil.d.ts",
       "import": "./dist/environments/stencil.js"
