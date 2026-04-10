@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/stenciljs/vitest/compare/v1.10.0...v1.11.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* better error handling ([#48](https://github.com/stenciljs/vitest/issues/48)) ([0051eef](https://github.com/stenciljs/vitest/commit/0051eef645fd98e3e9c766d18e32bb95bbcacce6))
+
+
+### Features
+
+* vite plugin ([#50](https://github.com/stenciljs/vitest/issues/50)) ([814bf34](https://github.com/stenciljs/vitest/commit/814bf34c14d6eb984fd18ee41e5385ef7bb6c184))
+
 # [1.10.0](https://github.com/stenciljs/vitest/compare/v1.9.3...v1.10.0) (2026-04-01)
 
 
