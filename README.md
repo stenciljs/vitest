@@ -442,7 +442,7 @@ expect(clickSpy.lastEvent?.detail).toEqual({ buttonId: 'my-button' });
 
 ## Stencil Vitest Plugin
 
-The default testing approach in this package works against **pre-built dist outputs** — Stencil compiles your components once and tests run against those bundles. This is fast and reliable, but it means Vitest never sees individual component source files as discrete modules. As a result, `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
+The recommended testing approach in this package is to test against **pre-built dist outputs** — Stencil compiles your components once and tests run against those bundles. This is fast and reliable, but it does mean Vitest never sees individual component source files as discrete modules. As a result, `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
 
 `stencilVitestPlugin` solves this by hooking into Vite's transform pipeline. Every `.tsx` file containing Stencil decorators is compiled on-the-fly via `transpileSync` before Vitest imports it, using `componentExport: 'customelement'`. This means each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
 
