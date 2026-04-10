@@ -465,6 +465,7 @@ export default defineVitestConfig({
           include: ['src/**/*.plugin.spec.{ts,tsx}'],
           // No dist setup file needed — each component source file registers
           // itself via customElements.define() the moment it is imported.
+          // Optional environment options
         },
       },
     ],
@@ -475,6 +476,24 @@ export default defineVitestConfig({
 ### Mocking component dependencies
 
 With the plugin active, import the component source directly in your test. The plugin compiles it on-the-fly and the `customElements.define()` call at the end of the transformed output registers the element immediately.
+
+Given an example component:
+
+```tsx
+import { Component, Prop, h } from '@stencil/core';
+import { capitalize } from '../../utils/index.js';
+
+@Component( ... )
+export class MyLabel {
+  @Prop() value: string = '';
+
+  render() {
+    return <span class="label">{capitalize(this.value)}</span>;
+  }
+}
+```
+
+It can then be imported and tested with mocked dependencies:
 
 ```tsx
 // my-label.plugin.spec.tsx
