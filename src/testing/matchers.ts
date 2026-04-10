@@ -5,7 +5,7 @@
  */
 
 import { expect } from 'vitest';
-import { serializeHtml, normalizeHtml, prettifyHtml } from './html-serializer.js';
+import { serializeHtml, normalizeHtml, prettifyHtml, sortAttributesInHtml } from './html-serializer.js';
 import type { EventSpy } from '../types.js';
 
 /**
@@ -441,8 +441,9 @@ function toEqualHtml(
     const expectedFragment = parseHtmlFragment(expected.trim());
     expectedHtml = serializeHtml(expectedFragment, { serializeShadowRoot: true, pretty: false });
   } else {
-    // For element comparisons, just normalize to preserve <mock:shadow-root> tags
-    expectedHtml = expected.trim();
+    // For element comparisons, sort attributes so hand-written expected HTML is
+    // order-independent (dev vs prod builds can reflect props in different orders)
+    expectedHtml = sortAttributesInHtml(expected.trim());
   }
 
   expectedHtml = normalizeHtml(expectedHtml);
@@ -500,8 +501,9 @@ function toEqualLightHtml(
     const expectedFragment = parseHtmlFragment(expected.trim());
     expectedHtml = serializeHtml(expectedFragment, { serializeShadowRoot: false, pretty: false });
   } else {
-    // For element comparisons, just normalize to preserve <mock:shadow-root> tags
-    expectedHtml = expected.trim();
+    // For element comparisons, sort attributes so hand-written expected HTML is
+    // order-independent (dev vs prod builds can reflect props in different orders)
+    expectedHtml = sortAttributesInHtml(expected.trim());
   }
 
   expectedHtml = normalizeHtml(expectedHtml);
