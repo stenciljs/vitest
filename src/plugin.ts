@@ -1,3 +1,6 @@
+import { transpile } from '@stencil/core/compiler';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import type { Plugin } from 'vitest/config';
 
 /**
@@ -31,10 +34,10 @@ import type { Plugin } from 'vitest/config';
  *   },
  * });
  * ```
- *
+ * @param opts Optional configuration for the plugin
  * @returns a Vite plugin configuration object
  */
-export function stencilVitestPlugin(): Plugin {
+export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
   return {
     name: 'stencil-vitest-transform',
     enforce: 'pre',
@@ -59,34 +62,61 @@ export function stencilVitestPlugin(): Plugin {
         return null;
       }
 
-      const { transpileSync } = await import('@stencil/core/compiler');
+      try {
+        const result = await transpile(code, {
+          file: id,
+          // 'customelement' appends a customElements.define() call so the component
+          // self-registers the moment this module is imported — no loader needed.
+          componentExport: 'customelement',
+          componentMetadata: 'compilerstatic',
+          currentDirectory: process.cwd(),
+          module: 'esm',
+          proxy: null,
+          sourceMap: false,
+          style: opts.css ? 'inline' : null,
+          styleImportData: opts.css ? 'queryparams' : null,
+          target: 'es2022',
+          // Don't rewrite import paths — let Vite handle resolution via aliases
+          transformAliasedImportPaths: false,
+        });
 
-      const result = transpileSync(code, {
-        file: id,
-        // 'customelement' appends a customElements.define() call so the component
-        // self-registers the moment this module is imported — no loader needed.
-        componentExport: 'customelement',
-        componentMetadata: 'compilerstatic',
-        currentDirectory: process.cwd(),
-        module: 'esm',
-        proxy: null,
-        sourceMap: false,
-        style: 'static',
-        styleImportData: 'queryparams',
-        target: 'es2022',
-        // Don't rewrite import paths — let Vite handle resolution via aliases
-        transformAliasedImportPaths: false,
-      });
+        const errors = result.diagnostics?.filter((d) => d.level === 'error') ?? [];
+        if (errors.length > 0) {
+          const messages = errors.map((d) => d.messageText).join('\n');
+          throw new Error(`[stencil-vitest-plugin] Transform error in ${id}:\n${messages}`);
+        }
 
-      const errors = result.diagnostics?.filter((d) => d.level === 'error') ?? [];
-      if (errors.length > 0) {
-        const messages = errors.map((d) => d.messageText).join('\n');
-        throw new Error(`[stencil-vitest-plugin] Transform error in ${id}:\n${messages}`);
+        let transformedCode = result.code;
+
+        // If CSS is enabled, inline the CSS imports as functions, - Stencil v4 always expects css to be a function, Vite
+        // tries to handle the import as a string and errors.
+        // In v5, Stencil supports both string and function styles, but the plugin opts for function style for consistency across versions.
+        if (opts.css) {
+          // Match: import SomeVar from "./path.css?tag=...&encapsulation=...";
+          const cssImportRegex = /import\s+(\w+)\s+from\s+['"]([^'"]+\.css\?tag[^'"]+)['"]\s*;?/g;
+          let match;
+
+          while ((match = cssImportRegex.exec(result.code)) !== null) {
+            const [fullMatch, varName, importPath] = match;
+            const [relPath] = importPath.split('?');
+            const absolutePath = resolve(dirname(id), relPath);
+
+            if (existsSync(absolutePath)) {
+              const css = readFileSync(absolutePath, 'utf-8');
+              // Replace the import with an inline function
+              const inlineFunc = `const ${varName} = () => ${JSON.stringify(css)};`;
+              transformedCode = transformedCode.replace(fullMatch, inlineFunc);
+            }
+          }
+        }
+
+        return {
+          code: transformedCode,
+        };
+      } catch (err) {
+        console.error(`[stencil-vitest-plugin] Failed to transform ${id}:`, err);
+        throw err;
       }
-
-      return {
-        code: result.code,
-      };
     },
   };
 }

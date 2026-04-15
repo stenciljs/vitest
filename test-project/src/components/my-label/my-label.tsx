@@ -8,6 +8,7 @@ import { capitalize } from '../../utils/index.js';
 @Component({
   tag: 'my-label',
   shadow: true,
+  styleUrl: 'my-label.css',
 })
 export class MyLabel {
   /** Raw text to display — run through `capitalize()` before rendering */
