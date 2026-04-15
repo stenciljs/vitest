@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/stenciljs/vitest/compare/v1.11.1...v1.11.2) (2026-04-15)
+
+
+### Bug Fixes
+
+* revert attribute sorting ([#53](https://github.com/stenciljs/vitest/issues/53)) ([3717f33](https://github.com/stenciljs/vitest/commit/3717f33ccefedd19db52314dfdfcbdba5cbdd5af)), closes [#51](https://github.com/stenciljs/vitest/issues/51)
+
 ## [1.11.1](https://github.com/stenciljs/vitest/compare/v1.11.0...v1.11.1) (2026-04-10)
 
 
