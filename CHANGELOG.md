@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/stenciljs/vitest/compare/v1.11.2...v1.11.3) (2026-04-15)
+
+
+### Bug Fixes
+
+* vite plugin can handle style imports ([#55](https://github.com/stenciljs/vitest/issues/55)) ([1bdecea](https://github.com/stenciljs/vitest/commit/1bdecead2eddd685bfa3d33c073d766ac47cc87c))
+
 ## [1.11.2](https://github.com/stenciljs/vitest/compare/v1.11.1...v1.11.2) (2026-04-15)
 
 
