@@ -21,7 +21,7 @@ exports[`my-button - snapshot tests (jsdom) > should match snapshot for card wit
   <p>
     Card content
   </p>
-  <my-button class="hydrated" slot="footer">
+  <my-button slot="footer" class="hydrated">
     <mock:shadow-root>
       <button class="button button--primary button--medium" type="button">
         <slot></slot>

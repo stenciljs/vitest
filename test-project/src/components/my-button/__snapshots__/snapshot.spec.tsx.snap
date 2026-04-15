@@ -34,7 +34,7 @@ exports[`my-button - snapshot tests > should match snapshot for card with nested
   <p>
     Card content
   </p>
-  <my-button class="hydrated" slot="footer">
+  <my-button slot="footer" class="hydrated">
     <mock:shadow-root>
       <button class="button button--primary button--medium" type="button">
         <slot></slot>
