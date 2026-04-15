@@ -23,7 +23,7 @@ export default defineVitestConfig({
         },
       },
       {
-        plugins: [stencilVitestPlugin()],
+        plugins: [stencilVitestPlugin({ css: true })],
         test: {
           name: 'plugin',
           environment: 'stencil',
