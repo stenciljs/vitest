@@ -17,17 +17,6 @@ export namespace Components {
         "label": string;
     }
     /**
-     * A labelled badge that extends FormattedBase for its text formatting.
-     * Demonstrates that vi.mock() intercepts imports used in inherited methods.
-     */
-    interface MyBadge {
-        /**
-          * The badge label — passed through this.format() before rendering
-          * @default ''
-         */
-        "label": string;
-    }
-    /**
      * A simple button component for testing
      */
     interface MyButton {
@@ -101,16 +90,6 @@ declare global {
         prototype: HTMLLifecycleThrowElement;
         new (): HTMLLifecycleThrowElement;
     };
-    /**
-     * A labelled badge that extends FormattedBase for its text formatting.
-     * Demonstrates that vi.mock() intercepts imports used in inherited methods.
-     */
-    interface HTMLMyBadgeElement extends Components.MyBadge, HTMLStencilElement {
-    }
-    var HTMLMyBadgeElement: {
-        prototype: HTMLMyBadgeElement;
-        new (): HTMLMyBadgeElement;
-    };
     interface HTMLMyButtonElementEventMap {
         "buttonClick": MouseEvent;
     }
@@ -164,7 +143,6 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "lifecycle-throw": HTMLLifecycleThrowElement;
-        "my-badge": HTMLMyBadgeElement;
         "my-button": HTMLMyButtonElement;
         "my-card": HTMLMyCardElement;
         "my-label": HTMLMyLabelElement;
@@ -179,17 +157,6 @@ declare namespace LocalJSX {
     interface LifecycleThrow {
         /**
           * Required label prop - throws if not provided
-         */
-        "label"?: string;
-    }
-    /**
-     * A labelled badge that extends FormattedBase for its text formatting.
-     * Demonstrates that vi.mock() intercepts imports used in inherited methods.
-     */
-    interface MyBadge {
-        /**
-          * The badge label — passed through this.format() before rendering
-          * @default ''
          */
         "label"?: string;
     }
@@ -259,9 +226,6 @@ declare namespace LocalJSX {
     interface LifecycleThrowAttributes {
         "label": string;
     }
-    interface MyBadgeAttributes {
-        "label": string;
-    }
     interface MyButtonAttributes {
         "variant": 'primary' | 'secondary' | 'danger';
         "disabled": boolean;
@@ -278,7 +242,6 @@ declare namespace LocalJSX {
 
     interface IntrinsicElements {
         "lifecycle-throw": Omit<LifecycleThrow, keyof LifecycleThrowAttributes> & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes]?: LifecycleThrow[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `attr:${K}`]?: LifecycleThrowAttributes[K] } & { [K in keyof LifecycleThrow & keyof LifecycleThrowAttributes as `prop:${K}`]?: LifecycleThrow[K] };
-        "my-badge": Omit<MyBadge, keyof MyBadgeAttributes> & { [K in keyof MyBadge & keyof MyBadgeAttributes]?: MyBadge[K] } & { [K in keyof MyBadge & keyof MyBadgeAttributes as `attr:${K}`]?: MyBadgeAttributes[K] } & { [K in keyof MyBadge & keyof MyBadgeAttributes as `prop:${K}`]?: MyBadge[K] };
         "my-button": Omit<MyButton, keyof MyButtonAttributes> & { [K in keyof MyButton & keyof MyButtonAttributes]?: MyButton[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `attr:${K}`]?: MyButtonAttributes[K] } & { [K in keyof MyButton & keyof MyButtonAttributes as `prop:${K}`]?: MyButton[K] };
         "my-card": Omit<MyCard, keyof MyCardAttributes> & { [K in keyof MyCard & keyof MyCardAttributes]?: MyCard[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `attr:${K}`]?: MyCardAttributes[K] } & { [K in keyof MyCard & keyof MyCardAttributes as `prop:${K}`]?: MyCard[K] };
         "my-label": Omit<MyLabel, keyof MyLabelAttributes> & { [K in keyof MyLabel & keyof MyLabelAttributes]?: MyLabel[K] } & { [K in keyof MyLabel & keyof MyLabelAttributes as `attr:${K}`]?: MyLabelAttributes[K] } & { [K in keyof MyLabel & keyof MyLabelAttributes as `prop:${K}`]?: MyLabel[K] };
@@ -294,11 +257,6 @@ declare module "@stencil/core" {
              * Used to test that lifecycle hooks are called and errors propagate correctly.
              */
             "lifecycle-throw": LocalJSX.IntrinsicElements["lifecycle-throw"] & JSXBase.HTMLAttributes<HTMLLifecycleThrowElement>;
-            /**
-             * A labelled badge that extends FormattedBase for its text formatting.
-             * Demonstrates that vi.mock() intercepts imports used in inherited methods.
-             */
-            "my-badge": LocalJSX.IntrinsicElements["my-badge"] & JSXBase.HTMLAttributes<HTMLMyBadgeElement>;
             /**
              * A simple button component for testing
              */

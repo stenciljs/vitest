@@ -102,15 +102,11 @@ function serializeElementWithShadow(
   // Build opening tag with attributes
   let html = `<${tagName}`;
 
-  // Add attributes sorted alphabetically for deterministic output across dev/prod builds
+  // Add attributes
   if (elem.attributes) {
-    const attrs = Array.from(elem.attributes).sort((a, b) => {
-      const nameA = a.prefix && a.localName ? `${a.prefix}:${a.localName}` : a.name;
-      const nameB = b.prefix && b.localName ? `${b.prefix}:${b.localName}` : b.name;
-      return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
-    });
+    for (let i = 0; i < elem.attributes.length; i++) {
+      const attr = elem.attributes[i];
 
-    for (const attr of attrs) {
       // Handle namespaced attributes (e.g., xlink:href)
       // Use prefix + localName if available, otherwise fall back to name
       let attrName = attr.name;
@@ -262,40 +258,6 @@ export function prettifyHtml(html: string): string {
   }
 
   return lines.join('\n');
-}
-
-/**
- * Sort attributes alphabetically within every opening HTML tag in a string.
- * Used to normalise expected HTML strings before comparison so that attribute
- * order written by hand in tests does not have to match the order produced by
- * the runtime (which can differ between dev and prod Stencil builds).
- *
- * Handles double-quoted attribute values and bare boolean attributes.
- * Does NOT touch closing tags, self-closing tags, or text content.
- */
-export function sortAttributesInHtml(html: string): string {
-  // Match opening tags: capture tag name and the rest of the attribute string
-  return html.replace(/<([a-zA-Z][a-zA-Z0-9:._-]*)((?:\s[^>]*)?)>/g, (_match, tagName: string, attrStr: string) => {
-    if (!attrStr.trim()) {
-      return `<${tagName}>`;
-    }
-
-    // Parse individual attributes (boolean attrs and attr="value" attrs)
-    const attrPattern = /\s+([^\s=>"/]+)(?:="([^"]*?)")?/g;
-    const attrs: Array<{ name: string; value: string | null }> = [];
-    let m: RegExpExecArray | null;
-    while ((m = attrPattern.exec(attrStr)) !== null) {
-      attrs.push({ name: m[1], value: m[2] !== undefined ? m[2] : null });
-    }
-
-    attrs.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-
-    const sortedAttrStr = attrs
-      .map(({ name, value }) => (value === null ? ` ${name}` : ` ${name}="${value}"`))
-      .join('');
-
-    return `<${tagName}${sortedAttrStr}>`;
-  });
 }
 
 /**
