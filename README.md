@@ -2,6 +2,38 @@
 
 First-class testing utilities for Stencil components, powered by Vitest.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+  - [1. Install](#1-install)
+  - [2. Create vitest.config.ts](#2-create-vitestconfigts)
+  - [3. Load your components](#3-load-your-components)
+  - [4. Write Tests](#4-write-tests)
+  - [5. Run tests](#5-run-tests)
+- [API](#api)
+  - [Rendering](#rendering)
+  - [Available matchers](#available-matchers)
+  - [Spying and Mocking](#spying-and-mocking)
+  - [Event Testing](#event-testing)
+- [Stencil Vitest Plugin](#stencil-vitest-plugin)
+  - [Setup](#setup)
+  - [Mocking component dependencies](#mocking-component-dependencies)
+  - [Limitations](#limitations)
+- [Snapshots](#snapshots)
+- [Screenshot Testing](#screenshot-testing)
+- [Utils](#utils)
+  - [serializeHtml](#serializehtmlelement-options)
+  - [prettifyHtml](#prettifyhtmlhtml)
+  - [waitForStable](#waitforstableelementorselector-timeout)
+  - [waitForExist](#waitforexistselector-timeout)
+- [CLI](#cli)
+  - [Add to package.json](#add-to-packagejson)
+  - [Usage](#usage)
+  - [CLI Options](#cli-options)
+  - [Global Variables](#global-variables)
+- [License](#license)
+- [Contributing](#contributing)
+
 ## Quick Start
 
 ### 1. Install
