@@ -27,10 +27,9 @@ First-class testing utilities for Stencil components, powered by Vitest.
   - [waitForStable](#waitforstableelementorselector-timeout)
   - [waitForExist](#waitforexistselector-timeout)
 - [CLI](#cli)
-  - [Add to package.json](#add-to-packagejson)
   - [Usage](#usage)
   - [CLI Options](#cli-options)
-  - [Global Variables](#global-variables)
+- [Global Variables](#global-variables)
 - [License](#license)
 - [Contributing](#contributing)
 
@@ -678,17 +677,6 @@ const element = await waitForExist('#dynamic-content', 10000);
 
 The `stencil-test` CLI wraps both Stencil builds with Vitest testing.
 
-### Add to package.json
-
-```json
-{
-  "scripts": {
-    "test": "stencil-test",
-    "test:watch": "stencil-test --watch"
-  }
-}
-```
-
 ### Usage
 
 ```bash
@@ -720,6 +708,8 @@ The `stencil-test` CLI supports most of Stencil's CLI options and all of Vitest 
 
 - For full Stencil CLI options, see [Stencil CLI docs](https://stenciljs.com/docs/cli).
 - For full Vitest CLI options, see [Vitest CLI docs](https://vitest.dev/guide/cli.html).
+
+Note: unlike a normal `stencil build` `stencil-vitest` runs in development mode by default for faster builds. Use `--prod` to test against a production build.
 
 ### Global Variables
 
