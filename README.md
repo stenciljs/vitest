@@ -28,7 +28,7 @@ First-class testing utilities for Stencil components, powered by Vitest.
   - [waitForExist](#waitforexistselector-timeout)
 - [CLI](#cli)
   - [Usage](#usage)
-  - [CLI Options](#cli-options)
+  - [Flags](#flags)
   - [Global Variables](#global-variables)
 - [License](#license)
 - [Contributing](#contributing)
