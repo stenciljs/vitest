@@ -29,7 +29,7 @@ First-class testing utilities for Stencil components, powered by Vitest.
 - [CLI](#cli)
   - [Usage](#usage)
   - [CLI Options](#cli-options)
-- [Global Variables](#global-variables)
+  - [Global Variables](#global-variables)
 - [License](#license)
 - [Contributing](#contributing)
 
@@ -702,7 +702,7 @@ stencil-test button.spec.ts
 stencil-test --project browser
 ```
 
-### CLI Options
+### Options
 
 The `stencil-test` CLI supports most of Stencil's CLI options and all of Vitest CLI options
 
