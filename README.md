@@ -702,12 +702,12 @@ stencil-test button.spec.ts
 stencil-test --project browser
 ```
 
-### Options
+### Flags
 
-The `stencil-test` CLI supports most of Stencil's CLI options and all of Vitest CLI options
+The `stencil-test` CLI supports most of Stencil's CLI flags and all of Vitest CLI flags
 
-- For full Stencil CLI options, see [Stencil CLI docs](https://stenciljs.com/docs/cli).
-- For full Vitest CLI options, see [Vitest CLI docs](https://vitest.dev/guide/cli.html).
+- For full Stencil CLI flags, see [Stencil CLI docs](https://stenciljs.com/docs/cli).
+- For full Vitest CLI flags, see [Vitest CLI docs](https://vitest.dev/guide/cli.html).
 
 Note: unlike a normal `stencil build` `stencil-vitest` runs in development mode by default for faster builds. Use `--prod` to test against a production build.
 
