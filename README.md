@@ -15,7 +15,7 @@ First-class testing utilities for Stencil components, powered by Vitest.
   - [Available matchers](#available-matchers)
   - [Spying and Mocking](#spying-and-mocking)
   - [Event Testing](#event-testing)
-- [Stencil Vitest Plugin](#stencil-vitest-plugin)
+- [Stencil Vitest Plugin (Experimental)](#stencil-vitest-plugin)
   - [Setup](#setup)
   - [Mocking component dependencies](#mocking-component-dependencies)
   - [Limitations](#limitations)
@@ -471,11 +471,14 @@ expect(clickSpy.firstEvent?.detail).toEqual({ buttonId: 'my-button' });
 expect(clickSpy.lastEvent?.detail).toEqual({ buttonId: 'my-button' });
 ```
 
-## Stencil Vitest Plugin
+## Stencil Vitest Plugin 
 
-The recommended testing approach in this package is to test against **pre-built dist outputs** — Stencil compiles your components once and tests run against those bundles. This is fast and reliable, but it does mean Vitest never sees individual component source files as discrete modules. As a result, `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
+All examples so far have mentioned setting up tests against **pre-built dist outputs**; Stencil compiles your components once and tests run against those bundles. Whilst this method is fast and reliable, it does mean Vitest never sees individual component source files as discrete modules and so does have 2 key limitations:
 
-`stencilVitestPlugin` solves this by hooking into Vite's transform pipeline. Every `.tsx` file containing Stencil decorators is compiled on-the-fly via `transpileSync` before Vitest imports it, using `componentExport: 'customelement'`. This means each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
+1) `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
+2) Coverage reports will not work out-of-the-box without additional configuration (`sourceMap: true` / [3rd party tools](https://github.com/cenfun/vitest-monocart-coverage)) and even then, may not be accurate.
+
+The experimental `stencilVitestPlugin` solves this by hooking into Vite's transform pipeline: Stencil files are compiled on-the-fly before Vitest imports them; each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
 
 ### Setup
 
@@ -492,11 +495,11 @@ export default defineVitestConfig({
         plugins: [stencilVitestPlugin()],
         test: {
           name: 'plugin',
-          environment: 'stencil',
           include: ['src/**/*.plugin.spec.{ts,tsx}'],
           // No dist setup file needed — each component source file registers
-          // itself via customElements.define() the moment it is imported.
-          // Optional environment options
+
+          environment: 'stencil',
+          // ^^ you can use the plugin with any setup - even browser tests!
         },
       },
     ],
@@ -554,7 +557,7 @@ it('renders using the mocked utility', async () => {
 
 #### Class inheritance
 
-In Stencil v4 `transpileSync` (used within the plugin) is a single-file compiler. When a component class `extends` a base class that lives in a separate file, `transpileSync` cannot follow the import to merge the parent's metadata and will throw an error.
+In Stencil v4 `transpile()` (used within the plugin) is a single-file compiler. When a component class `extends` a base class that lives in a separate file, `transpile()` cannot follow the import to merge the parent's metadata and will throw an error.
 
 ```tsx
 // ❌ Will fail — base class is in a separate file
@@ -564,7 +567,7 @@ import { FormBase } from './form-base.js';
 export class MyInput extends FormBase { ... }
 ```
 
-> This limitation is specific to v4. Stencil v5's compiler can resolve multi-file inheritance chains.
+> This limitation is specific to v4. Stencil v5's `transpile()` can resolve multi-file inheritance chains.
 
 ## Snapshots
 
@@ -742,6 +745,16 @@ Add to your `tsconfig.json` for type definitions:
   }
 }
 ```
+
+## Limitations / Gotchas
+
+### `vi.mock()` doesn't work?
+
+Modules can only be mocked if they are imported in a way that Vitest can intercept. If your components are importing dependencies that you want to mock, you must use the `stencilVitestPlugin` to compile components on-the-fly and allow Vitest to mock their imports. See the [Stencil Vitest Plugin section](#stencil-vitest-plugin) for details.
+
+### Coverage reports are empty or inaccurate?
+
+When testing against pre-built dist outputs, source maps (`sourceMap: true` in `stencil.config.ts`) and [3rd party tools](https://github.com/cenfun/vitest-monocart-coverage) are required for coverage reports. Alternatively, consider using the `stencilVitestPlugin` which compiles components on-the-fly and provides better coverage support.
 
 ## License
 
