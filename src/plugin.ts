@@ -37,7 +37,7 @@ import type { Plugin } from 'vitest/config';
  * @param opts Optional configuration for the plugin
  * @returns a Vite plugin configuration object
  */
-export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
+export function stencilVitestPlugin(): Plugin {
   return {
     name: 'stencil-vitest-transform',
     enforce: 'pre',
@@ -105,10 +105,9 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           module: 'esm',
           proxy: null,
           sourceMap: false,
-          style: opts.css ? 'static' : null,
-          styleImportData: opts.css ? 'queryparams' : null,
+          style: 'static',
+          styleImportData: 'queryparams',
           target: 'es2022',
-          // Don't rewrite import paths — let Vite handle resolution via aliases
           transformAliasedImportPaths: false,
         });
 
