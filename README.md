@@ -471,12 +471,12 @@ expect(clickSpy.firstEvent?.detail).toEqual({ buttonId: 'my-button' });
 expect(clickSpy.lastEvent?.detail).toEqual({ buttonId: 'my-button' });
 ```
 
-## Stencil Vitest Plugin 
+## Stencil Vitest Plugin
 
 All examples so far have mentioned setting up tests against **pre-built dist outputs**; Stencil compiles your components once and tests run against those bundles. Whilst this method is fast and reliable, it does mean Vitest never sees individual component source files as discrete modules and so does have 2 key limitations:
 
-1) `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
-2) Coverage reports will not work out-of-the-box without additional configuration (`sourceMap: true` / [3rd party tools](https://github.com/cenfun/vitest-monocart-coverage)) and even then, may not be accurate.
+1. `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
+2. Coverage reports will not work out-of-the-box without additional configuration (`sourceMap: true` / [3rd party tools](https://github.com/cenfun/vitest-monocart-coverage)) and even then, may not be accurate.
 
 The experimental `stencilVitestPlugin` solves this by hooking into Vite's transform pipeline: Stencil files are compiled on-the-fly before Vitest imports them; each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
 
