@@ -98,6 +98,27 @@ export default <Environment>{
       (global as any).Event = originals.get('Event');
     }
 
+    // Create HTMLElement wrapper that captures ownerDocument
+    // In Stencil 4.43+, win.HTMLElement returns MockHTMLElement directly which expects
+    // ownerDocument as the first constructor arg. But Stencil-compiled components call
+    // super() with no args (standard browser behavior). This wrapper bridges the gap.
+    const MockHTMLElementBase = (global as any).HTMLElement;
+    const doc = win.document;
+    (global as any).HTMLElement = class extends MockHTMLElementBase {
+      constructor() {
+        super(doc, '');
+        const observedAttributes = (this.constructor as any).observedAttributes;
+        if (Array.isArray(observedAttributes) && typeof (this as any).attributeChangedCallback === 'function') {
+          observedAttributes.forEach((attrName: string) => {
+            const attrValue = this.getAttribute(attrName);
+            if (attrValue != null) {
+              (this as any).attributeChangedCallback(attrName, null, attrValue);
+            }
+          });
+        }
+      }
+    };
+
     // Remove undefined properties that shadow native globals
     keys.forEach((key) => {
       if ((global as any)[key] === undefined && originals.has(key)) {
