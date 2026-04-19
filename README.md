@@ -30,6 +30,7 @@ First-class testing utilities for Stencil components, powered by Vitest.
   - [Usage](#usage)
   - [Flags](#flags)
   - [Global Variables](#global-variables)
+- [Limitations / Gotchas](#limitations--gotchas)
 - [License](#license)
 - [Contributing](#contributing)
 
