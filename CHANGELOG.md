@@ -1,3 +1,12 @@
+## [1.11.4](https://github.com/stenciljs/vitest/compare/v1.11.3...v1.11.4) (2026-04-19)
+
+
+### Bug Fixes
+
+* mock-doc - override node Event ([9b788b2](https://github.com/stenciljs/vitest/commit/9b788b205776df5d52adfd167467650e6d31f6cf))
+* patch >4.42 mock-doc HTMLElement to not require ownerDocument ([1b17c71](https://github.com/stenciljs/vitest/commit/1b17c71c2bb345182a60321aea63dd3f127edad5))
+* stencilVitestPlugin to properly process css files via Stencil's tooling ([35fca2b](https://github.com/stenciljs/vitest/commit/35fca2b75eb46c7ecb85d6186c72f305c07999c2))
+
 ## [1.11.3](https://github.com/stenciljs/vitest/compare/v1.11.2...v1.11.3) (2026-04-15)
 
 
