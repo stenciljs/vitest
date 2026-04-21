@@ -37,7 +37,7 @@ import type { Plugin } from 'vitest/config';
  * @param opts Optional configuration for the plugin
  * @returns a Vite plugin configuration object
  */
-export function stencilVitestPlugin(): Plugin {
+export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
   return {
     name: 'stencil-vitest-transform',
     enforce: 'pre',
@@ -46,7 +46,11 @@ export function stencilVitestPlugin(): Plugin {
       if (id.includes('.css') && id.includes('tag=')) {
         const [relPath] = id.split('?');
         const query = id.slice(id.indexOf('?'));
-        const resolved = resolve(dirname(importer!), relPath);
+        // Strip virtual prefix from importer if present
+        const realImporter = importer?.startsWith('\0stencil-style:')
+          ? importer.slice('\0stencil-style:'.length).split('?')[0] + '.css'
+          : importer!;
+        const resolved = resolve(dirname(realImporter), relPath);
         // Remove .css from virtual ID to prevent Vite's CSS plugin from hijacking the output
         return '\0stencil-style:' + resolved.replace(/\.css$/, '') + query;
       }
@@ -105,9 +109,10 @@ export function stencilVitestPlugin(): Plugin {
           module: 'esm',
           proxy: null,
           sourceMap: false,
-          style: 'static',
-          styleImportData: 'queryparams',
+          style: opts.css ? 'static' : null,
+          styleImportData: opts.css ? 'queryparams' : null,
           target: 'es2022',
+          // Don't rewrite import paths — let Vite handle resolution via aliases
           transformAliasedImportPaths: false,
         });
 
