@@ -1,3 +1,10 @@
+## [1.11.5](https://github.com/stenciljs/vitest/compare/v1.11.4...v1.11.5) (2026-04-21)
+
+
+### Bug Fixes
+
+* revert style plugin changes ([8843b7d](https://github.com/stenciljs/vitest/commit/8843b7d45e33cdf2f2216ea335e821fed5f9b179))
+
 ## [1.11.4](https://github.com/stenciljs/vitest/compare/v1.11.3...v1.11.4) (2026-04-19)
 
 
