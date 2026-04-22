@@ -46,13 +46,17 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
       if (id.includes('.css') && id.includes('tag=')) {
         const [relPath] = id.split('?');
         const query = id.slice(id.indexOf('?'));
-        // Strip virtual prefix from importer if present
         const realImporter = importer?.startsWith('\0stencil-style:')
           ? importer.slice('\0stencil-style:'.length).split('?')[0] + '.css'
           : importer!;
-        const resolved = resolve(dirname(realImporter), relPath);
-        // Remove .css from virtual ID to prevent Vite's CSS plugin from hijacking the output
-        return '\0stencil-style:' + resolved.replace(/\.css$/, '') + query;
+
+        // Resolve bare specifiers from node_modules, otherwise resolve relative to importer
+        const resolved =
+          !relPath.startsWith('.') && !relPath.startsWith('/')
+            ? resolve(process.cwd(), 'node_modules', relPath.replace(/^~/, ''))
+            : resolve(dirname(realImporter), relPath);
+
+        return '\0stencil-style:' + resolved.replace(/\.css$/, '') + (query || '');
       }
       return null;
     },
@@ -68,15 +72,13 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
 
     async transform(code, id) {
       if (id.startsWith('\0stencil-style:')) {
-        // Reconstruct the original .css path for Stencil's transpiler (it uses extension to detect file type)
         const pathWithoutPrefix = id.slice('\0stencil-style:'.length);
         const [basePath, query] = pathWithoutPrefix.split('?');
         const originalPath = basePath + '.css' + (query ? '?' + query : '');
-        const result = await transpile(code, { file: originalPath });
-        return {
-          code: result.code,
-          map: null,
-        };
+        const result = await transpile(code, {
+          file: originalPath,
+        });
+        return { code: result.code, map: null };
       }
 
       // Only transform .tsx files
@@ -104,7 +106,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           // 'customelement' appends a customElements.define() call so the component
           // self-registers the moment this module is imported — no loader needed.
           componentExport: 'customelement',
-          componentMetadata: 'compilerstatic',
+          componentMetadata: 'runtimestatic',
           currentDirectory: process.cwd(),
           module: 'esm',
           proxy: null,

@@ -12,7 +12,8 @@
     "test": "stencil-test"
   },
   "dependencies": {
-    "@stencil/core": "^4.43.3"
+    "@stencil/core": "^4.43.3",
+    "css-reset-and-normalize": "^2.3.6"
   },
   "devDependencies": {
     "@stencil/vitest": "workspace:*",

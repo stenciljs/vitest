@@ -24,6 +24,11 @@ export default defineVitestConfig({
       },
       {
         plugins: [stencilVitestPlugin({ css: true })],
+        resolve: {
+          alias: {
+            '~': path.resolve(__dirname, 'node_modules'),
+          },
+        },
         test: {
           name: 'plugin',
           environment: 'stencil',

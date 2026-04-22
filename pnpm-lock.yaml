@@ -84,6 +84,9 @@ importers:
       '@stencil/core':
         specifier: ^4.43.3
         version: 4.43.3
+      css-reset-and-normalize:
+        specifier: ^2.3.6
+        version: 2.3.6
     devDependencies:
       '@stencil/vitest':
         specifier: workspace:*
@@ -1427,6 +1430,9 @@ packages:
   crypto-random-string@4.0.0:
     resolution: {integrity: sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA==}
     engines: {node: '>=12'}
+
+  css-reset-and-normalize@2.3.6:
+    resolution: {integrity: sha512-aJFxaPG2CQLn5YmpO+4bvgJfsJkHS7c2MYVnhKtpQ1VTq799ttT6Ec7M3Nz0GXo8DkNlanTyrI82tbyh0fvdMQ==}
 
   css-tree@3.1.0:
     resolution: {integrity: sha512-0eW44TGN5SQXU1mWSkKwFstI/22X2bG1nYzZTYMAWjylYURhse752YgbE4Cx46AC+bAvI+/dYTPRk1LqSUnu6w==}
@@ -4515,6 +4521,8 @@ snapshots:
   crypto-random-string@4.0.0:
     dependencies:
       type-fest: 1.4.0
+
+  css-reset-and-normalize@2.3.6: {}
 
   css-tree@3.1.0:
     dependencies:
