@@ -36,7 +36,7 @@ describe('my-label — module mocking via stencilVitestPlugin', () => {
 
     const { root } = await render(<my-label value="hello" />);
     const span = root.shadowRoot!.querySelector('span');
-    expect(span?.textContent).toBe('Hello');
+    expect(span?.textContent).toBe('Hello state: value');
   });
 
   it('renders using the mocked capitalize', async () => {
@@ -45,7 +45,7 @@ describe('my-label — module mocking via stencilVitestPlugin', () => {
     const { root } = await render(<my-label value="hello" />);
     const span = root.shadowRoot!.querySelector('span');
 
-    expect(span?.textContent).toBe('[mocked:hello]');
+    expect(span?.textContent).toBe('[mocked:hello] state: value');
     expect(capitalize).toHaveBeenCalledWith('hello');
   });
 
@@ -53,12 +53,12 @@ describe('my-label — module mocking via stencilVitestPlugin', () => {
     vi.mocked(capitalize).mockImplementation((s) => `UPPER:${s.toUpperCase()}`);
 
     const { root, setProps, waitForChanges } = await render(<my-label value="world" />);
-    expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('UPPER:WORLD');
+    expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('UPPER:WORLD state: value');
 
     await setProps({ value: 'changed' });
     await waitForChanges();
 
-    expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('UPPER:CHANGED');
+    expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('UPPER:CHANGED state: value');
     expect(capitalize).toHaveBeenCalledTimes(2);
   });
 });

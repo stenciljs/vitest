@@ -1,4 +1,4 @@
-import { Component, Prop, h } from '@stencil/core';
+import { Component, Prop, State, h } from '@stencil/core';
 import { capitalize } from '../../utils/index.js';
 
 /**
@@ -14,11 +14,15 @@ export class MyLabel {
   /** Raw text to display — run through `capitalize()` before rendering */
   @Prop() value: string = '';
 
+   @State() state = {
+    property: 'value'
+  };
+
   componentDidLoad(): void {
     window.dispatchEvent(new Event('custom-event'));
   }
 
   render() {
-    return <span class="label">{capitalize(this.value)}</span>;
+    return <span class="label">{capitalize(this.value)} state: {this.state.property}</span>;
   }
 }
