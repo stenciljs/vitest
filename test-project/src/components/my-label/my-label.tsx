@@ -14,8 +14,8 @@ export class MyLabel {
   /** Raw text to display — run through `capitalize()` before rendering */
   @Prop() value: string = '';
 
-   @State() state = {
-    property: 'value'
+  @State() state = {
+    property: 'value',
   };
 
   componentDidLoad(): void {
@@ -23,6 +23,10 @@ export class MyLabel {
   }
 
   render() {
-    return <span class="label">{capitalize(this.value)} state: {this.state.property}</span>;
+    return (
+      <span class="label">
+        {capitalize(this.value)} state: {this.state.property}
+      </span>
+    );
   }
 }
