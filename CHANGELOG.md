@@ -1,3 +1,11 @@
+## [1.11.6](https://github.com/stenciljs/vitest/compare/v1.11.5...v1.11.6) (2026-04-22)
+
+
+### Bug Fixes
+
+* **plugin:** css node_modules imports ([bbf1873](https://github.com/stenciljs/vitest/commit/bbf1873f5b6705cdba8c432f86e0ecb1f98daa56))
+* **plugin:** state decorator initial values ([765e85a](https://github.com/stenciljs/vitest/commit/765e85afddf3a73840a4eb9efb7efa22dece091e))
+
 ## [1.11.5](https://github.com/stenciljs/vitest/compare/v1.11.4...v1.11.5) (2026-04-21)
 
 
