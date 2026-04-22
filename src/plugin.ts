@@ -111,7 +111,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           sourceMap: false,
           style: opts.css ? 'static' : null,
           styleImportData: opts.css ? 'queryparams' : null,
-          target: 'es2022',
+          target: 'es2017',
           // Don't rewrite import paths — let Vite handle resolution via aliases
           transformAliasedImportPaths: false,
         });
