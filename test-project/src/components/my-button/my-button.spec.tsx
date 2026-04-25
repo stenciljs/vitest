@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, type RenderResult } from '@stencil/vitest';
 import { h } from '@stencil/core';
+import { type MyButton } from './my-button';
 
 describe('my-button - spec tests', () => {
   let result: RenderResult;
@@ -142,5 +143,13 @@ describe('my-button - spec tests', () => {
 
       expect(button?.classList.contains('button--danger')).toBe(true);
     });
+  });
+
+  it('can get the class instance properties', async () => {
+    const { instance } = await render<HTMLMyButtonElement, MyButton>(<my-button variant="primary" />);
+
+    if (!instance) return;
+
+    expect(instance.internalValue).toBe('variant:primary');
   });
 });

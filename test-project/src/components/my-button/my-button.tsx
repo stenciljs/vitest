@@ -9,6 +9,10 @@ import { Component, Prop, Event, EventEmitter, h } from '@stencil/core';
   shadow: true,
 })
 export class MyButton {
+  get internalValue() {
+    return 'variant:' + this.variant;
+  }
+
   /**
    * The button variant style
    */
@@ -27,7 +31,7 @@ export class MyButton {
   /**
    * Emitted when the button is clicked
    */
-  @Event() buttonClick: EventEmitter<MouseEvent>;
+  @Event() buttonClick!: EventEmitter<MouseEvent>;
 
   private handleClick = (event: MouseEvent) => {
     if (!this.disabled) {

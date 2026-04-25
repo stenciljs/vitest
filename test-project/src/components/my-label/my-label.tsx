@@ -14,6 +14,10 @@ export class MyLabel {
   /** Raw text to display — run through `capitalize()` before rendering */
   @Prop() value: string = '';
 
+  get myValue() {
+    return 'hello' + ' ' + this.value;
+  }
+
   @State() state = {
     property: 'value',
   };

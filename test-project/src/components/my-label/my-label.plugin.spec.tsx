@@ -22,7 +22,8 @@ vi.mock('../../utils/index.js', () => ({
 // Import the component source — the plugin transforms it on-the-fly
 // and the resulting customElements.define() call registers <my-label>
 // the moment this import resolves.
-import './my-label.tsx';
+import { MyLabel } from './my-label';
+import './my-label';
 import { capitalize } from '../../utils/index.js';
 
 describe('my-label — module mocking via stencilVitestPlugin', () => {
@@ -60,5 +61,14 @@ describe('my-label — module mocking via stencilVitestPlugin', () => {
 
     expect(root.shadowRoot!.querySelector('span')?.textContent).toBe('UPPER:CHANGED state: value');
     expect(capitalize).toHaveBeenCalledTimes(2);
+  });
+
+  it('can get the class instance properties', async () => {
+    const { instance } = await render<HTMLMyLabelElement, MyLabel>(<my-label value="world" />);
+
+    if (!instance) return;
+
+    expect(instance.myValue).toBe('hello world');
+    expect(instance.state).toEqual({ property: 'value' });
   });
 });

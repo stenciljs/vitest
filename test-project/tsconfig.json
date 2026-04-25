@@ -15,10 +15,9 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "types": ["vitest/globals", "@vitest/browser/matchers", "@stencil/vitest/globals"],
-    "baseUrl": ".",
     "paths": {
-      "@utils": ["src/utils/index.ts"],
-      "@utils/*": ["src/utils/*"]
+      "@utils": ["./src/utils/index.ts"],
+      "@utils/*": ["./src/utils/*"]
     }
   },
   "include": ["src"],
