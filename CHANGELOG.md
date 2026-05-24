@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/stenciljs/vitest/compare/v1.11.6...v1.12.0) (2026-05-24)
+
+
+### Features
+
+* support scoped custom element registries ([8fd388a](https://github.com/stenciljs/vitest/commit/8fd388a62e5ea774f90be1896d128ca1c78c7cdb))
+
 ## [1.11.6](https://github.com/stenciljs/vitest/compare/v1.11.5...v1.11.6) (2026-04-22)
 
 
