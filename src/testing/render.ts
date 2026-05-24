@@ -21,6 +21,13 @@ interface RenderOptions {
    * Spy configuration for this render call. Spies on methods, props, and lifecycle hooks.
    */
   spyOn?: SpyConfig;
+  /**
+   * The CustomElementRegistry in which the component is defined.
+   * Defaults to the global `customElements`. Pass a scoped registry when
+   * testing Scoped Custom Element Registry scenarios so that
+   * `whenDefined()` resolves against the correct registry.
+   */
+  registry?: CustomElementRegistry;
 }
 
 // Track event spies
@@ -227,7 +234,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     container.innerHTML = template;
   } else {
     // Use Stencil's render which handles VNodes properly in the browser
-    await stencilRender(template, container);
+    stencilRender(template, container);
   }
 
   // Get the rendered element
@@ -274,7 +281,7 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     // Wait for custom element to be defined
     const tagName = element.tagName.toLowerCase();
     if (tagName.includes('-')) {
-      await customElements.whenDefined(tagName);
+      await (options.registry ?? customElements).whenDefined(tagName);
     }
 
     // Wait for component to be ready
