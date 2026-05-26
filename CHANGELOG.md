@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/stenciljs/vitest/compare/v1.12.0...v1.12.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* SCER handling in render container creation ([980173b](https://github.com/stenciljs/vitest/commit/980173bfb8dc8fb8e732b50965487ad84257b4d7))
+
 # [1.12.0](https://github.com/stenciljs/vitest/compare/v1.11.6...v1.12.0) (2026-05-24)
 
 
