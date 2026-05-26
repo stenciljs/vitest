@@ -200,7 +200,10 @@ export async function render<T extends HTMLElement = HTMLElement, I = any>(
     stageAttrs: { class: 'stencil-component-stage' },
   },
 ): Promise<RenderResult<T, I>> {
-  const container = document.createElement('div', {customElementRegistry: options.registry ?? customElements});
+  // @ts-ignore - customElementRegistry is new and it's fine
+  const container = document.createElement('div', {
+    customElementRegistry: options.registry ?? customElements,
+  });
   Object.entries(options.stageAttrs || {}).forEach(([key, value]) => {
     container.setAttribute(key, value);
   });
