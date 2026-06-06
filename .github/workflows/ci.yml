@@ -75,14 +75,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Set Chromium path (Linux)
-        if: runner.os == 'Linux'
-        run: echo "CHROMIUM_EXECUTABLE_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
-
-      - name: Set Chromium path (Windows)
-        if: runner.os == 'Windows'
-        run: echo "CHROMIUM_EXECUTABLE_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe" >> $env:GITHUB_ENV
-
       - name: Build module
         run: pnpm build && pnpm install
 

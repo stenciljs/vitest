@@ -81,15 +81,10 @@ export default defineVitestConfig({
           setupFiles: ['./vitest-setup-dist.ts'],
           browser: {
             enabled: true,
-            provider: playwright(),
+            provider: playwright(process.env.CI ? { launchOptions: { channel: 'chrome' } } : undefined),
             headless: true,
             instances: [
-              {
-                browser: 'chromium',
-                launch: process.env.CHROMIUM_EXECUTABLE_PATH
-                  ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH }
-                  : undefined,
-              },
+              { browser: 'chromium' },
             ],
             expect: {
               toMatchScreenshot: {
