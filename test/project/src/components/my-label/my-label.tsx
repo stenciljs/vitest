@@ -11,7 +11,7 @@ import { capitalize } from '../../utils/index.js';
   styleUrl: 'my-label.css',
 })
 export class MyLabel {
-  /** Raw text to display — run through `capitalize()` before rendering */
+  /** Raw text to display - run through `capitalize()` before rendering */
   @Prop() value: string = '';
 
   @State() state = {

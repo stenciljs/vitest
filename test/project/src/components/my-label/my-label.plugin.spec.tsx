@@ -4,7 +4,7 @@
  * The plugin transforms my-label.tsx on-the-fly via the Stencil compiler
  * (componentExport: 'customelement'), so it enters Vitest's module graph as
  * a discrete ES module. That means vi.mock() can intercept any import the
- * component makes — here we mock the capitalize() utility it calls in render().
+ * component makes - here we mock the capitalize() utility it calls in render().
  *
  * This is impossible with the pre-built dist approach because the component
  * and its dependencies are already bundled together before Vitest sees them.
@@ -19,13 +19,13 @@ vi.mock('../../utils/index.js', () => ({
   capitalize: vi.fn((s: string) => `[mocked:${s}]`),
 }));
 
-// Import the component source — the plugin transforms it on-the-fly
+// Import the component source - the plugin transforms it on-the-fly
 // and the resulting customElements.define() call registers <my-label>
 // the moment this import resolves.
 import './my-label.tsx';
 import { capitalize } from '../../utils/index.js';
 
-describe('my-label — module mocking via stencilVitestPlugin', () => {
+describe('my-label - module mocking via stencilVitestPlugin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

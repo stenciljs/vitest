@@ -9,7 +9,7 @@ import type { Plugin } from 'vitest/config';
  *
  * The compiled output uses `componentExport: 'customelement'`, which appends a
  * `customElements.define()` call at the end of the transformed file. The component
- * registers itself the moment the module is imported — no dist loader or setup file
+ * registers itself the moment the module is imported - no dist loader or setup file
  * required. Works with `@stencil/core` v4 and v5.
  *
  * @example
@@ -27,7 +27,7 @@ import type { Plugin } from 'vitest/config';
  *           name: 'stencil',
  *           environment: 'stencil',
  *           include: ['**\/*.spec.tsx'],
- *           // No dist loader needed — import components from source directly
+ *           // No dist loader needed - import components from source directly
  *         },
  *       },
  *     ],
@@ -104,7 +104,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
         const result = await transpile(code, {
           file: id,
           // 'customelement' appends a customElements.define() call so the component
-          // self-registers the moment this module is imported — no loader needed.
+          // self-registers the moment this module is imported - no loader needed.
           componentExport: 'customelement',
           componentMetadata: 'runtimestatic',
           currentDirectory: process.cwd(),
@@ -114,7 +114,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           style: opts.css ? 'static' : null,
           styleImportData: opts.css ? 'queryparams' : null,
           target: 'es2017',
-          // Don't rewrite import paths — let Vite handle resolution via aliases
+          // Don't rewrite import paths - let Vite handle resolution via aliases
           transformAliasedImportPaths: false,
         });
 

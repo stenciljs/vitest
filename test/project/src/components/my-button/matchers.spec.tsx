@@ -208,7 +208,7 @@ describe('my-button - custom matchers', () => {
     // Regression: a previous attempt at attribute sorting (sortAttributesInHtml)
     // used a regex that truncated values containing double-quotes (e.g. JSON objects)
     // and stripped values from single-quoted attributes entirely.
-    // The fix is to not sort — users write attributes in the order the serializer
+    // The fix is to not sort - users write attributes in the order the serializer
     // produces them (alphabetical), same as every other testing library.
 
     it('toEqualLightHtml: attribute with JSON value (single-quoted in expected string)', async () => {

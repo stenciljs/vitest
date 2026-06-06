@@ -479,7 +479,7 @@ All examples so far have mentioned setting up tests against **pre-built dist out
 1. `vi.mock()` cannot intercept imports made by your components, because the dependency is already bundled away before Vitest gets involved.
 2. Coverage reports will not work out-of-the-box without additional configuration (`sourceMap: true` / [3rd party tools](https://github.com/cenfun/vitest-monocart-coverage)) and even then, may not be accurate.
 
-The experimental `stencilVitestPlugin` solves this by hooking into Vite's transform pipeline: Stencil files are compiled on-the-fly before Vitest imports them; each component file becomes its own entry in Vitest's module graph — and its imports are independently resolvable and mockable.
+The experimental `stencilVitestPlugin` solves this by hooking into Vite's transform pipeline: Stencil files are compiled on-the-fly before Vitest imports them; each component file becomes its own entry in Vitest's module graph - and its imports are independently resolvable and mockable.
 
 ### Setup
 
@@ -497,7 +497,7 @@ export default defineVitestConfig({
         test: {
           name: 'plugin',
           include: ['src/**/*.plugin.spec.{ts,tsx}'],
-          // No dist setup file needed — each component source file registers
+          // No dist setup file needed - each component source file registers
 
           environment: 'stencil',
           // ^^ you can use the plugin with any setup - even browser tests!
@@ -535,7 +535,7 @@ It can then be imported and tested with mocked dependencies:
 import { describe, it, expect, vi } from 'vitest';
 import { render, h } from '@stencil/vitest';
 
-// vi.mock() is hoisted — the mock is in place before any imports resolve
+// vi.mock() is hoisted - the mock is in place before any imports resolve
 vi.mock('../utils/index.js', () => ({
   capitalize: vi.fn((s: string) => `[mocked:${s}]`),
 }));
@@ -561,7 +561,7 @@ it('renders using the mocked utility', async () => {
 In Stencil v4 `transpile()` (used within the plugin) is a single-file compiler. When a component class `extends` a base class that lives in a separate file, `transpile()` cannot follow the import to merge the parent's metadata and will throw an error.
 
 ```tsx
-// ❌ Will fail — base class is in a separate file
+// ❌ Will fail - base class is in a separate file
 import { FormBase } from './form-base.js';
 
 @Component({ tag: 'my-input', shadow: true })
