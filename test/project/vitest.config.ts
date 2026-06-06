@@ -84,13 +84,13 @@ export default defineVitestConfig({
             provider: playwright(),
             headless: true,
             instances: [
-            {
-              browser: 'chromium',
-              launch: process.env.CHROMIUM_EXECUTABLE_PATH
-                ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH }
-                : undefined,
-            },
-          ],
+              {
+                browser: 'chromium',
+                launch: process.env.CHROMIUM_EXECUTABLE_PATH
+                  ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH }
+                  : undefined,
+              },
+            ],
             expect: {
               toMatchScreenshot: {
                 comparatorName: 'pixelmatch',
