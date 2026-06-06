@@ -75,20 +75,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ${{ runner.os == 'Windows' && 'C:\Users\runneradmin\AppData\Local\ms-playwright' || '~/.cache/ms-playwright' }}
-          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Set Chromium path (Linux)
+        if: runner.os == 'Linux'
+        run: echo "CHROMIUM_EXECUTABLE_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
 
-      - name: Install Playwright
-        run: pnpm playwright-core install chromium --with-deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-
-      - name: Install Playwright system deps only
-        run: pnpm playwright-core install-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit == 'true' && runner.os == 'Linux'
+      - name: Set Chromium path (Windows)
+        if: runner.os == 'Windows'
+        run: echo "CHROMIUM_EXECUTABLE_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe" >> $env:GITHUB_ENV
 
       - name: Build module
         run: pnpm build && pnpm install
