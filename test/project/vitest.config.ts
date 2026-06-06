@@ -83,9 +83,7 @@ export default defineVitestConfig({
             enabled: true,
             provider: playwright(process.env.CI ? { launchOptions: { channel: 'chrome' } } : undefined),
             headless: true,
-            instances: [
-              { browser: 'chromium' },
-            ],
+            instances: [{ browser: 'chromium' }],
             expect: {
               toMatchScreenshot: {
                 comparatorName: 'pixelmatch',
