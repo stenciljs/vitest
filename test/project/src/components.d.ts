@@ -22,7 +22,7 @@ export namespace Components {
    */
   interface MyBadge {
     /**
-     * The badge label — passed through this.format() before rendering
+     * The badge label - passed through this.format() before rendering
      * @default ''
      */
     label: string;
@@ -72,7 +72,7 @@ export namespace Components {
    */
   interface MyLabel {
     /**
-     * Raw text to display — run through `capitalize()` before rendering
+     * Raw text to display - run through `capitalize()` before rendering
      * @default ''
      */
     value: string;
@@ -214,7 +214,7 @@ declare namespace LocalJSX {
    */
   interface MyBadge {
     /**
-     * The badge label — passed through this.format() before rendering
+     * The badge label - passed through this.format() before rendering
      * @default ''
      */
     label?: string;
@@ -268,7 +268,7 @@ declare namespace LocalJSX {
    */
   interface MyLabel {
     /**
-     * Raw text to display — run through `capitalize()` before rendering
+     * Raw text to display - run through `capitalize()` before rendering
      * @default ''
      */
     value?: string;

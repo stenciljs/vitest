@@ -8,7 +8,7 @@ import { capitalize } from '../../utils/index.js';
  * and cannot follow imports to resolve external base class metadata.
  */
 class FormattedBase {
-  /** Applies capitalize() from utils — mockable in tests */
+  /** Applies capitalize() from utils - mockable in tests */
   protected format(value: string): string {
     return capitalize(value);
   }
@@ -23,7 +23,7 @@ class FormattedBase {
   shadow: true,
 })
 export class MyBadge extends FormattedBase {
-  /** The badge label — passed through this.format() before rendering */
+  /** The badge label - passed through this.format() before rendering */
   @Prop() label: string = '';
 
   render() {

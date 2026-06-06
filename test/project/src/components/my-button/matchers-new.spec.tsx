@@ -232,7 +232,7 @@ describe('my-button - matchers', () => {
 
     describe('shadow DOM text traversal (shadow: true)', () => {
       it('should find text that lives inside the shadow root', async () => {
-        // cardTitle renders as <h3> inside the shadow root — not in light DOM
+        // cardTitle renders as <h3> inside the shadow root - not in light DOM
         const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
 
         expect(root).toHaveTextContent('Shadow Title');
@@ -263,7 +263,7 @@ describe('my-button - matchers', () => {
     });
 
     it('should NOT find text that is only in the shadow root', async () => {
-      // cardTitle is rendered inside the shadow DOM — light DOM traversal should not see it
+      // cardTitle is rendered inside the shadow DOM - light DOM traversal should not see it
       const { root } = await render(<my-card cardTitle="Shadow Title">Slotted Content</my-card>);
 
       expect(root).not.toHaveLightTextContent('Shadow Title');
@@ -300,7 +300,7 @@ describe('my-button - matchers', () => {
     });
 
     it('should match text that lives inside the shadow root', async () => {
-      // cardTitle renders as <h3> inside the shadow root — toEqualText should see it
+      // cardTitle renders as <h3> inside the shadow root - toEqualText should see it
       const { root } = await render(<my-card cardTitle="Only Title" />);
 
       expect(root).toEqualText('Only Title');
@@ -315,7 +315,7 @@ describe('my-button - matchers', () => {
     });
 
     it('should NOT match text that is only in the shadow root', async () => {
-      // cardTitle renders inside the shadow DOM — light text will be empty
+      // cardTitle renders inside the shadow DOM - light text will be empty
       const { root } = await render(<my-card cardTitle="Shadow Title" />);
 
       expect(root).not.toEqualLightText('Shadow Title');

@@ -33,7 +33,7 @@ export default defineVitestConfig({
           name: 'plugin',
           environment: 'stencil',
           include: ['**/*.plugin.spec.{ts,tsx}'],
-          // No dist setup file — the plugin's customElements.define() output
+          // No dist setup file - the plugin's customElements.define() output
           // registers each component the moment its source file is imported.
         },
       },
