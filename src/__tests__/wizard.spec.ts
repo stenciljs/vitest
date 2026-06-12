@@ -10,6 +10,11 @@ function makeTmpDir() {
 
 const noCancel = () => false;
 
+async function callFileTemplates(ctx: any): Promise<any[]> {
+  const ft = wizard.generate!.fileTemplates;
+  return typeof ft === 'function' ? [...(await ft(ctx))] : [...(ft ?? [])];
+}
+
 function makeSpinner() {
   return { start: vi.fn(), stop: vi.fn() };
 }
@@ -59,7 +64,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
 
     expect(templates).toHaveLength(2);
     expect(templates[0].extension).toBe('spec.tsx');
@@ -74,7 +79,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
     const content = templates[0].template('my-button');
 
     expect(content).toContain("import './my-button'");
@@ -88,7 +93,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
     const content = templates[1].template('my-button');
 
     expect(content).not.toContain("import './my-button'");
@@ -101,7 +106,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
 
     expect(templates[0].subdirectory).toBe('__tests__');
   });
@@ -126,7 +131,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
 
     expect(templates).toHaveLength(1);
     expect(templates[0].extension).toBe('spec.tsx');
@@ -157,7 +162,7 @@ describe('wizard.generate.fileTemplates', () => {
       config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
     };
 
-    const templates = await wizard.generate!.fileTemplates(ctx as any);
+    const templates = await callFileTemplates(ctx);
 
     expect(templates).toHaveLength(1);
     expect(templates[0].selectedByDefault).toBe(false);

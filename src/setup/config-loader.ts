@@ -1,4 +1,4 @@
-import type { Config as StencilConfig, HydratedFlag } from '@stencil/core/compiler';
+import type { Config as StencilConfig, HydratedFlag } from '@stencil/core/internal';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 
