@@ -1,7 +1,39 @@
 import { transpile } from '@stencil/core/compiler';
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import type { Plugin } from 'vitest/config';
+
+// TypeScript JsxEmit enum values — stable across versions
+const JSX_EMIT: Record<string, number> = {
+  react: 2,
+  'react-jsx': 4,
+  'react-jsxdev': 5,
+  preserve: 1,
+  'react-native': 3,
+};
+
+let cachedJsxOpts: { jsx?: number; jsxImportSource?: string } | undefined;
+
+function readJsxOptsFromTsConfig(cwd: string): { jsx?: number; jsxImportSource?: string } {
+  if (cachedJsxOpts !== undefined) return cachedJsxOpts;
+  const tsconfigPath = join(cwd, 'tsconfig.json');
+  if (!existsSync(tsconfigPath)) return (cachedJsxOpts = {});
+  try {
+    const raw = readFileSync(tsconfigPath, 'utf-8');
+    const stripped = raw.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const tsconfig = JSON.parse(stripped);
+    const jsxStr: string | undefined = tsconfig?.compilerOptions?.jsx?.toLowerCase();
+    if (jsxStr && jsxStr in JSX_EMIT) {
+      return (cachedJsxOpts = {
+        jsx: JSX_EMIT[jsxStr],
+        jsxImportSource: tsconfig?.compilerOptions?.jsxImportSource,
+      });
+    }
+  } catch {
+    // ignore unreadable / malformed tsconfig
+  }
+  return (cachedJsxOpts = {});
+}
 
 /**
  * A Vite/Vitest plugin that transforms Stencil component source files (.tsx) on-the-fly,
@@ -101,6 +133,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
       }
 
       try {
+        const jsxOpts = readJsxOptsFromTsConfig(process.cwd());
         const result = await transpile(code, {
           file: id,
           // 'customelement' appends a customElements.define() call so the component
@@ -116,6 +149,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           target: 'es2017',
           // Don't rewrite import paths - let Vite handle resolution via aliases
           transformAliasedImportPaths: false,
+          ...jsxOpts,
         });
 
         const errors = result.diagnostics?.filter((d) => d.level === 'error') ?? [];

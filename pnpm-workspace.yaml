@@ -1,5 +1,4 @@
 packages:
-  - '.'
-  - 'test/project'
-  - 'test/env-comments'
-  - 'packages/*'
+  - .
+  - test/*
+  - packages/*
