@@ -51,6 +51,8 @@ export default [
       'test/env-comments/hydrate/**',
       'test/env-comments/src/components.d.ts',
 
+      'test/wizard-playground/**',
+
       'packages/*/dist/**',
       'vitest-environment-stencil/**',
     ],

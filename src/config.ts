@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import {
@@ -7,7 +9,7 @@ import {
   getStencilResolveAliases,
   getStencilHydratedFlag,
 } from './setup/config-loader.js';
-import type { Config as StencilConfig } from '@stencil/core/internal';
+import type { Config as StencilConfig } from '@stencil/core';
 
 // Resolve the path to the stencil environment module at config load time
 // This is necessary for pnpm which doesn't hoist transitive dependencies
@@ -138,6 +140,29 @@ function generateCoverageExcludes(testIncludes: string[], srcDir: string): strin
 }
 
 /**
+ * Read JSX options from the nearest tsconfig.json.
+ * Returns 'automatic' mode when the project uses `"jsx": "react-jsx"` so that
+ * Vite's transformer honours jsxImportSource instead of forcing classic `h`.
+ */
+function readTsConfigJsxOptions(cwd: string): { mode: 'classic' | 'automatic'; importSource?: string } {
+  const tsconfigPath = join(cwd, 'tsconfig.json');
+  if (!existsSync(tsconfigPath)) return { mode: 'classic' };
+  try {
+    // tsconfig is JSONC — strip line and block comments before parsing
+    const raw = readFileSync(tsconfigPath, 'utf-8');
+    const stripped = raw.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const tsconfig = JSON.parse(stripped);
+    const jsx: string | undefined = tsconfig?.compilerOptions?.jsx;
+    if (jsx === 'react-jsx' || jsx === 'react-jsxdev') {
+      return { mode: 'automatic', importSource: tsconfig?.compilerOptions?.jsxImportSource };
+    }
+  } catch {
+    // ignore unreadable / malformed tsconfig
+  }
+  return { mode: 'classic' };
+}
+
+/**
  * Apply Stencil-specific defaults to Vitest config
  */
 function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilConfig): ViteUserConfig {
@@ -163,23 +188,29 @@ function applyStencilDefaults(config: ViteUserConfig, stencilConfig?: StencilCon
     };
   }
 
-  // Add JSX config for the active transformer
-  // Vite 7+ uses oxc by default, older versions use esbuild
-  if ((result as any).oxc) {
-    // oxc is explicitly configured - set JSX options on it
+  // Add JSX config for the active transformer, honouring the project's tsconfig.
+  // Vite 7+ uses oxc by default, older versions use esbuild.
+  const jsxOpts = readTsConfigJsxOptions(process.cwd());
+
+  // oxc is Vite 8+'s default transformer; esbuild is the fallback for older Vite.
+  // Set oxc jsx unless the user explicitly disabled it (`oxc: false`), in which
+  // case esbuild is still active and needs the jsx settings instead.
+  const oxcDisabled = (result as any).oxc === false;
+  if (!oxcDisabled) {
+    if (!(result as any).oxc) {
+      (result as any).oxc = {};
+    }
     if (!(result as any).oxc.jsx) {
-      (result as any).oxc.jsx = {
-        runtime: 'classic',
-        pragma: 'h',
-        pragmaFrag: 'Fragment',
-      };
+      (result as any).oxc.jsx =
+        jsxOpts.mode === 'automatic'
+          ? { runtime: 'automatic', importSource: jsxOpts.importSource }
+          : { runtime: 'classic', pragma: 'h', pragmaFrag: 'Fragment' };
     }
   } else if (!result.esbuild) {
-    // No oxc config, set esbuild JSX options (for older Vite versions)
-    result.esbuild = {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-    };
+    result.esbuild =
+      jsxOpts.mode === 'automatic'
+        ? { jsx: 'automatic', jsxImportSource: jsxOpts.importSource }
+        : { jsxFactory: 'h', jsxFragment: 'Fragment' };
   }
 
   // Add resolve aliases from Stencil config if not present
