@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/stenciljs/vitest/compare/v1.12.1...v1.13.0) (2026-06-13)
+
+
+### Features
+
+* add v5 wizard participation ([fda8a5e](https://github.com/stenciljs/vitest/commit/fda8a5e89ce5980bcf4b28c28087ea6ba8a3ab46))
+
 ## [1.12.1](https://github.com/stenciljs/vitest/compare/v1.12.0...v1.12.1) (2026-05-26)
 
 
