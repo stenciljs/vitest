@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/stenciljs/vitest/compare/v1.13.0...v1.13.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* plugin sourcemaps (accurate debug breakpoints) ([662c91e](https://github.com/stenciljs/vitest/commit/662c91e33f87686fee645e741872d157b880847a))
+
 # [1.13.0](https://github.com/stenciljs/vitest/compare/v1.12.1...v1.13.0) (2026-06-13)
 
 
