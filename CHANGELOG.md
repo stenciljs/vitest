@@ -1,3 +1,10 @@
+## [1.13.2](https://github.com/stenciljs/vitest/compare/v1.13.1...v1.13.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* **plugin:** return sourcemap ([887837d](https://github.com/stenciljs/vitest/commit/887837d321a909da4d9e8a11b84ecf1a34f7a2fa))
+
 ## [1.13.1](https://github.com/stenciljs/vitest/compare/v1.13.0...v1.13.1) (2026-06-15)
 
 
