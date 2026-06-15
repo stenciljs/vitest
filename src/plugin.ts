@@ -143,7 +143,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
           currentDirectory: process.cwd(),
           module: 'esm',
           proxy: null,
-          sourceMap: false,
+          sourceMap: true,
           style: opts.css ? 'static' : null,
           styleImportData: opts.css ? 'queryparams' : null,
           target: 'es2017',
