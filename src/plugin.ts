@@ -160,6 +160,7 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
 
         return {
           code: result.code,
+          sourcemap: result.map,
         };
       } catch (err) {
         console.error(`[stencil-vitest-plugin] Failed to transform ${id}:`, err);
