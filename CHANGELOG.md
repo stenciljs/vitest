@@ -1,3 +1,10 @@
+## [1.13.3](https://github.com/stenciljs/vitest/compare/v1.13.2...v1.13.3) (2026-06-23)
+
+
+### Bug Fixes
+
+* improve v5 stencil deps range ([e02a78a](https://github.com/stenciljs/vitest/commit/e02a78a3ea1e0bce0f0aca0fe88ea053c5c449ac))
+
 ## [1.13.2](https://github.com/stenciljs/vitest/compare/v1.13.1...v1.13.2) (2026-06-15)
 
 
