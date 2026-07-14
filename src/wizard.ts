@@ -229,7 +229,11 @@ async function promptProject(
         label: 'Plugin (source)',
         hint: 'compile on-the-fly via @stencil/unplugin - module mocking, accurate coverage',
       },
-      { value: 'full-build', label: 'Full build (dist)', hint: 'test the actual output - no module mocking, no coverage' },
+      {
+        value: 'full-build',
+        label: 'Full build (dist)',
+        hint: 'test the actual output - no module mocking, no coverage',
+      },
     ],
   });
   if (isCancel(loadMethod)) {

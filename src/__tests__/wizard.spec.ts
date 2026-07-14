@@ -360,7 +360,13 @@ describe('wizard.init.run', () => {
     await wizard.init!.run(ctx as any);
 
     expect(ctx.nypm.addDependency).toHaveBeenCalledWith(
-      expect.arrayContaining(['vitest', '@vitest/browser', '@vitest/browser-playwright', 'playwright', '@stencil/unplugin']),
+      expect.arrayContaining([
+        'vitest',
+        '@vitest/browser',
+        '@vitest/browser-playwright',
+        'playwright',
+        '@stencil/unplugin',
+      ]),
       expect.objectContaining({ dev: true }),
     );
 
