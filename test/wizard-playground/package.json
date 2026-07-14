@@ -7,35 +7,18 @@
     "dist/"
   ],
   "scripts": {
-    "build": "stencil build",
-    "dev": "stencil build --dev --watch --serve",
-    "generate": "stencil generate",
     "wizard:init-dev": "STENCIL_WIZARD_DEV=../../dist/wizard.js stencil init",
-    "wizard:add-dev": "STENCIL_WIZARD_DEV=../../dist/wizard.js stencil add",
-    "test": "stencil-test",
-    "test:unit": "vitest run --project unit",
-    "test:browser": "stencil-test --project browser",
-    "test:jsdom": "stencil-test --project jsdom",
-    "test:happy": "vitest run --project happy"
-  },
-  "devDependencies": {
-    "@stencil/vitest": "workspace:*",
-    "@vitest/browser": "^4.1.8",
-    "@vitest/browser-playwright": "^4.1.8",
-    "happy-dom": "^20.10.2",
-    "jsdom": "^27.3.0",
-    "playwright": "^1.57.0",
-    "vitest": "^4.1.8"
+    "wizard:add-dev": "STENCIL_WIZARD_DEV=../../dist/wizard.js stencil add"
   },
   "collection": "./dist/collection/collection-manifest.json",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@stencil/core": "5.0.0-alpha.8"
+    "@stencil/core": "5.0.0-alpha.26"
   },
   "pnpm": {
     "overrides": {
-      "@stencil/core": "5.0.0-alpha.8"
+      "@stencil/core": "5.0.0-alpha.26"
     }
   },
   "module": "./dist/standalone/index.js",
