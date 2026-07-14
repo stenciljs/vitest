@@ -100,17 +100,6 @@ describe('wizard.generate.fileTemplates', () => {
     expect(content).toContain("describe('my-button'");
   });
 
-  it('passes subdirectory to templates', async () => {
-    const ctx = {
-      prompts: { text: vi.fn().mockResolvedValue('__tests__'), isCancel: noCancel },
-      config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
-    };
-
-    const templates = await callFileTemplates(ctx);
-
-    expect(templates[0].subdirectory).toBe('__tests__');
-  });
-
   it('uses project-based templates when vitest.config.ts has a node project', async () => {
     writeFileSync(
       join(tmpDir, 'vitest.config.ts'),
@@ -167,6 +156,36 @@ describe('wizard.generate.fileTemplates', () => {
     expect(templates).toHaveLength(1);
     expect(templates[0].selectedByDefault).toBe(false);
   });
+
+  it('includes a component import for a browser project using the unplugin plugin', async () => {
+    writeFileSync(
+      join(tmpDir, 'vitest.config.ts'),
+      `export default {
+  test: {
+    projects: [
+      {
+        plugins: [{}],
+        test: {
+          name: 'browser',
+          include: ['**/*.browser.spec.{ts,tsx}'],
+          browser: { enabled: true },
+        },
+      },
+    ],
+  },
+};\n`,
+    );
+
+    const ctx = {
+      prompts: { text: vi.fn().mockResolvedValue(''), isCancel: noCancel },
+      config: { rootDir: tmpDir, fsNamespace: 'my-lib', outputTargets: [] },
+    };
+
+    const templates = await callFileTemplates(ctx);
+    const content = templates[0].template('my-button');
+
+    expect(content).toContain("import './my-button'");
+  });
 });
 
 describe('wizard.init.run', () => {
@@ -210,7 +229,7 @@ describe('wizard.init.run', () => {
     expect(configContent).toContain("name: 'unit'");
   });
 
-  it('creates vitest.config.ts with stencilVitestPlugin for a node+plugin project', async () => {
+  it('creates vitest.config.ts with @stencil/unplugin for a node+plugin project', async () => {
     const ctx = makeInitCtx(tmpDir);
     ctx.prompts.text.mockResolvedValueOnce('unit').mockResolvedValueOnce('**/*.spec.{ts,tsx}');
     ctx.prompts.select.mockResolvedValueOnce('node').mockResolvedValueOnce('mock-doc').mockResolvedValueOnce('plugin');
@@ -219,7 +238,8 @@ describe('wizard.init.run', () => {
     await wizard.init!.run(ctx as any);
 
     const config = readFileSync(join(tmpDir, 'vitest.config.ts'), 'utf8');
-    expect(config).toContain('stencilVitestPlugin()');
+    expect(config).toContain("import { stencilVite } from '@stencil/unplugin';");
+    expect(config).toContain('stencilVite()');
     expect(config).toContain("name: 'unit'");
     expect(config).toContain("include: ['**/*.spec.{ts,tsx}']");
     expect(config).not.toContain('setupFiles');
@@ -237,7 +257,7 @@ describe('wizard.init.run', () => {
     await wizard.init!.run(ctx as any);
 
     const config = readFileSync(join(tmpDir, 'vitest.config.ts'), 'utf8');
-    expect(config).not.toContain('stencilVitestPlugin');
+    expect(config).not.toContain('stencilVite');
     expect(config).toContain("setupFiles: ['./vitest-setup.ts']");
     expect(config).toContain("domEnvironment: 'happy-dom'");
   });
@@ -289,10 +309,13 @@ describe('wizard.init.run', () => {
     );
   });
 
-  it('installs playwright packages for a browser+playwright project', async () => {
+  it('installs playwright packages for a browser+playwright+full-build project', async () => {
     const ctx = makeInitCtx(tmpDir);
     ctx.prompts.text.mockResolvedValueOnce('browser').mockResolvedValueOnce('**/*.browser.spec.{ts,tsx}');
-    ctx.prompts.select.mockResolvedValueOnce('browser').mockResolvedValueOnce('playwright');
+    ctx.prompts.select
+      .mockResolvedValueOnce('browser')
+      .mockResolvedValueOnce('playwright')
+      .mockResolvedValueOnce('full-build');
     ctx.prompts.confirm.mockResolvedValueOnce(false);
 
     await wizard.init!.run(ctx as any);
@@ -301,12 +324,19 @@ describe('wizard.init.run', () => {
       expect.arrayContaining(['vitest', '@vitest/browser', '@vitest/browser-playwright', 'playwright']),
       expect.objectContaining({ dev: true }),
     );
+    expect(ctx.nypm.addDependency).not.toHaveBeenCalledWith(
+      expect.arrayContaining(['@stencil/unplugin']),
+      expect.anything(),
+    );
   });
 
-  it('installs wdio packages for a browser+webdriverio project', async () => {
+  it('installs wdio packages for a browser+webdriverio+full-build project', async () => {
     const ctx = makeInitCtx(tmpDir);
     ctx.prompts.text.mockResolvedValueOnce('browser').mockResolvedValueOnce('**/*.browser.spec.{ts,tsx}');
-    ctx.prompts.select.mockResolvedValueOnce('browser').mockResolvedValueOnce('wdio');
+    ctx.prompts.select
+      .mockResolvedValueOnce('browser')
+      .mockResolvedValueOnce('wdio')
+      .mockResolvedValueOnce('full-build');
     ctx.prompts.confirm.mockResolvedValueOnce(false);
 
     await wizard.init!.run(ctx as any);
@@ -316,6 +346,29 @@ describe('wizard.init.run', () => {
       expect.objectContaining({ dev: true }),
     );
     expect(ctx.nypm.addDependency).not.toHaveBeenCalledWith(expect.arrayContaining(['playwright']), expect.anything());
+  });
+
+  it('sets up a browser+plugin project with @stencil/unplugin - no build required', async () => {
+    const ctx = makeInitCtx(tmpDir);
+    ctx.prompts.text.mockResolvedValueOnce('browser').mockResolvedValueOnce('**/*.browser.spec.{ts,tsx}');
+    ctx.prompts.select
+      .mockResolvedValueOnce('browser')
+      .mockResolvedValueOnce('playwright')
+      .mockResolvedValueOnce('plugin');
+    ctx.prompts.confirm.mockResolvedValueOnce(false);
+
+    await wizard.init!.run(ctx as any);
+
+    expect(ctx.nypm.addDependency).toHaveBeenCalledWith(
+      expect.arrayContaining(['vitest', '@vitest/browser', '@vitest/browser-playwright', 'playwright', '@stencil/unplugin']),
+      expect.objectContaining({ dev: true }),
+    );
+
+    const config = readFileSync(join(tmpDir, 'vitest.config.ts'), 'utf8');
+    expect(config).toContain("import { stencilVite } from '@stencil/unplugin';");
+    expect(config).toContain('stencilVite()');
+    expect(config).not.toContain('setupFiles');
+    expect(existsSync(join(tmpDir, 'vitest-setup.ts'))).toBe(false);
   });
 
   it('writes test and test:<name> scripts to package.json', async () => {
@@ -378,8 +431,7 @@ export class MyButton { render() { return <button />; } }
     const ctx = makeInitCtx(tmpDir, [], true);
     ctx.prompts.text
       .mockResolvedValueOnce('unit') // project name
-      .mockResolvedValueOnce('**/*.spec.{ts,tsx}') // pattern
-      .mockResolvedValueOnce(''); // subdirectory (empty = co-locate)
+      .mockResolvedValueOnce('**/*.spec.{ts,tsx}'); // pattern
     ctx.prompts.select.mockResolvedValueOnce('node').mockResolvedValueOnce('mock-doc').mockResolvedValueOnce('plugin');
     ctx.prompts.confirm.mockResolvedValueOnce(false);
 
@@ -390,31 +442,6 @@ export class MyButton { render() { return <button />; } }
     const spec = readFileSync(specFile, 'utf8');
     expect(spec).toContain("describe('my-button'");
     expect(spec).toContain('<my-button />');
-  });
-
-  it('generates example spec files into a subdirectory for new projects', async () => {
-    const componentDir = join(tmpDir, 'src', 'components', 'my-button');
-    mkdirSync(componentDir, { recursive: true });
-    writeFileSync(
-      join(componentDir, 'my-button.tsx'),
-      `import { Component, h } from '@stencil/core';
-@Component({ tag: 'my-button', shadow: true })
-export class MyButton { render() { return <button />; } }
-`,
-    );
-
-    const ctx = makeInitCtx(tmpDir, [], true);
-    ctx.prompts.text
-      .mockResolvedValueOnce('unit')
-      .mockResolvedValueOnce('**/*.spec.{ts,tsx}')
-      .mockResolvedValueOnce('__tests__');
-    ctx.prompts.select.mockResolvedValueOnce('node').mockResolvedValueOnce('mock-doc').mockResolvedValueOnce('plugin');
-    ctx.prompts.confirm.mockResolvedValueOnce(false);
-
-    await wizard.init!.run(ctx as any);
-
-    const specFile = join(componentDir, '__tests__', 'my-button.spec.tsx');
-    expect(existsSync(specFile)).toBe(true);
   });
 
   it('skips example test generation when isNewProject is false', async () => {
@@ -464,7 +491,8 @@ export class MyButton { render() { return <button />; } }
       .mockResolvedValueOnce('mock-doc')
       .mockResolvedValueOnce('plugin')
       .mockResolvedValueOnce('browser')
-      .mockResolvedValueOnce('playwright');
+      .mockResolvedValueOnce('playwright')
+      .mockResolvedValueOnce('full-build');
     ctx.prompts.confirm
       .mockResolvedValueOnce(true) // add another
       .mockResolvedValueOnce(false); // stop
@@ -474,7 +502,7 @@ export class MyButton { render() { return <button />; } }
     const config = readFileSync(join(tmpDir, 'vitest.config.ts'), 'utf8');
     expect(config).toContain("name: 'unit'");
     expect(config).toContain("name: 'browser'");
-    expect(config).toContain('stencilVitestPlugin()');
+    expect(config).toContain('stencilVite()');
     expect(config).toContain('playwright()');
   });
 });

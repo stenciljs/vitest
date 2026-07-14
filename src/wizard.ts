@@ -1,5 +1,5 @@
 import type { GenerateContext, ProjectConfig, StencilWizardPlugin, WizardContext } from '@stencil/cli';
-import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { access, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 type DomEnvironment = 'mock-doc' | 'jsdom' | 'happy-dom';
@@ -7,21 +7,20 @@ type LoadMethod = 'plugin' | 'full-build';
 type BrowserProviderName = 'playwright' | 'wdio';
 type OutputTarget = 'loader-bundle' | 'standalone';
 
-interface NodeProject {
-  type: 'node';
+interface ProjectBase {
   name: string;
   pattern: string;
-  subdirectory?: string;
-  env: DomEnvironment;
   loadMethod: LoadMethod;
+}
+
+interface NodeProject extends ProjectBase {
+  type: 'node';
+  env: DomEnvironment;
   outputTarget: OutputTarget | null;
 }
 
-interface BrowserProject {
+interface BrowserProject extends ProjectBase {
   type: 'browser';
-  name: string;
-  pattern: string;
-  subdirectory?: string;
   provider: BrowserProviderName;
 }
 
@@ -31,8 +30,7 @@ interface ProjectMeta {
   type: 'node' | 'browser';
   name: string;
   pattern: string;
-  subdirectory?: string;
-  loadMethod?: LoadMethod;
+  loadMethod: LoadMethod;
 }
 
 /** Reads the existing vitest.config.ts (if any) and extracts project name/pattern/type metadata. */
@@ -53,11 +51,12 @@ async function loadVitestProjects(rootDir: string): Promise<ProjectMeta[]> {
       const pattern = (test.include as string[] | undefined)?.[0];
       if (!name || !pattern) return [];
 
+      const loadMethod: LoadMethod = Array.isArray(p.plugins) && p.plugins.length > 0 ? 'plugin' : 'full-build';
+
       if (test.browser?.enabled === true) {
-        return [{ type: 'browser' as const, name, pattern }];
+        return [{ type: 'browser' as const, name, pattern, loadMethod }];
       }
 
-      const loadMethod: LoadMethod = Array.isArray(p.plugins) && p.plugins.length > 0 ? 'plugin' : 'full-build';
       return [{ type: 'node' as const, name, pattern, loadMethod }];
     });
   } catch {
@@ -126,7 +125,6 @@ async function promptProject(
   usedPatterns: Set<string>,
   outputTargets: { hasLoaderBundle: boolean; hasStandalone: boolean },
   isFirst: boolean,
-  askSubdirectory: boolean,
 ): Promise<Project> {
   const { text, select, isCancel, cancel, log } = prompts;
 
@@ -171,20 +169,6 @@ async function promptProject(
   }
   usedPatterns.add(pattern);
 
-  let subdirectory: string | undefined;
-  if (askSubdirectory) {
-    const rawSubdir = await text({
-      message: 'Test file subdirectory? (leave blank to co-locate with component)',
-      placeholder: 'e.g. __tests__',
-      defaultValue: '',
-    });
-    if (isCancel(rawSubdir)) {
-      cancel('Setup cancelled.');
-      process.exit(0);
-    }
-    subdirectory = (rawSubdir as string).trim() || undefined;
-  }
-
   if (projectType === 'browser') {
     const provider = await select({
       message: 'Browser provider?',
@@ -198,7 +182,29 @@ async function promptProject(
       process.exit(0);
     }
 
-    return { type: 'browser', name, pattern, subdirectory, provider: provider as BrowserProviderName };
+    const browserLoadMethod = await select({
+      message: 'How should components be loaded?',
+      options: [
+        {
+          value: 'plugin',
+          label: 'Plugin (source)',
+          hint: 'compile on-the-fly via @stencil/unplugin - no dist build required',
+        },
+        { value: 'full-build', label: 'Full build (dist)', hint: 'test the built loader/standalone bundle' },
+      ],
+    });
+    if (isCancel(browserLoadMethod)) {
+      cancel('Setup cancelled.');
+      process.exit(0);
+    }
+
+    return {
+      type: 'browser',
+      name,
+      pattern,
+      provider: provider as BrowserProviderName,
+      loadMethod: browserLoadMethod as LoadMethod,
+    };
   }
 
   // Node-based
@@ -218,8 +224,12 @@ async function promptProject(
   const loadMethod = await select({
     message: 'How should components be loaded?',
     options: [
-      { value: 'plugin', label: 'Plugin (source)', hint: 'compile on-the-fly - module mocking, accurate coverage' },
-      { value: 'full-build', label: 'Full build (dist)', hint: 'test the actual output - no mocking, no coverage' },
+      {
+        value: 'plugin',
+        label: 'Plugin (source)',
+        hint: 'compile on-the-fly via @stencil/unplugin - module mocking, accurate coverage',
+      },
+      { value: 'full-build', label: 'Full build (dist)', hint: 'test the actual output - no module mocking, no coverage' },
     ],
   });
   if (isCancel(loadMethod)) {
@@ -251,7 +261,6 @@ async function promptProject(
     type: 'node',
     name,
     pattern,
-    subdirectory,
     env: env as DomEnvironment,
     loadMethod: loadMethod as LoadMethod,
     outputTarget,
@@ -262,6 +271,7 @@ async function promptProject(
 function collectDeps(projects: Project[]): string[] {
   const deps = new Set<string>(['vitest']);
   for (const p of projects) {
+    if (p.loadMethod === 'plugin') deps.add('@stencil/unplugin');
     if (p.type === 'node') {
       if (p.env === 'jsdom') deps.add('jsdom');
       if (p.env === 'happy-dom') deps.add('happy-dom');
@@ -283,13 +293,15 @@ function generateProjectBlock(project: Project, excludePatterns: string[]): stri
   const excludeLine =
     excludePatterns.length > 0 ? `\n          exclude: [${excludePatterns.map((p) => `'${p}'`).join(', ')}],` : '';
 
+  const pluginsLine = project.loadMethod === 'plugin' ? '\n        plugins: [stencilVite()],' : '';
+  const setupLine = project.loadMethod === 'full-build' ? `\n          setupFiles: ['./vitest-setup.ts'],` : '';
+
   if (project.type === 'browser') {
     const providerExpr = project.provider === 'playwright' ? 'playwright()' : 'webdriverio()';
-    return `      {
+    return `      {${pluginsLine}
         test: {
           name: '${project.name}',
-          include: ['${project.pattern}'],${excludeLine}
-          setupFiles: ['./vitest-setup.ts'],
+          include: ['${project.pattern}'],${excludeLine}${setupLine}
           browser: {
             enabled: true,
             provider: ${providerExpr},
@@ -308,10 +320,6 @@ function generateProjectBlock(project: Project, excludePatterns: string[]): stri
           },`
       : '';
 
-  const pluginsLine = project.loadMethod === 'plugin' ? '\n        plugins: [stencilVitestPlugin()],' : '';
-
-  const setupLine = project.loadMethod === 'full-build' ? `\n          setupFiles: ['./vitest-setup.ts'],` : '';
-
   return `      {${pluginsLine}
         test: {
           name: '${project.name}',
@@ -323,13 +331,13 @@ function generateProjectBlock(project: Project, excludePatterns: string[]): stri
 
 /** Generates the full vitest.config.ts file content for the chosen set of projects. */
 function generateVitestConfig(projects: Project[], hasStencilConfig: boolean): string {
-  const needsPlugin = projects.some((p) => p.type === 'node' && (p as NodeProject).loadMethod === 'plugin');
+  const needsPlugin = projects.some((p) => p.loadMethod === 'plugin');
   const needsPlaywright = projects.some((p) => p.type === 'browser' && (p as BrowserProject).provider === 'playwright');
   const needsWdio = projects.some((p) => p.type === 'browser' && (p as BrowserProject).provider === 'wdio');
 
   const imports = [
     `import { defineVitestConfig } from '@stencil/vitest/config';`,
-    needsPlugin ? `import { stencilVitestPlugin } from '@stencil/vitest/plugin';` : null,
+    needsPlugin ? `import { stencilVite } from '@stencil/unplugin';` : null,
     needsPlaywright ? `import { playwright } from '@vitest/browser-playwright';` : null,
     needsWdio ? `import { webdriverio } from '@vitest/browser-webdriverio';` : null,
   ]
@@ -364,9 +372,8 @@ ${projectBlocks},
 `;
 }
 
-function specTemplate(tagName: string, importComponent = false, subdirectory?: string): string {
-  const importPath = subdirectory ? `'../${tagName}'` : `'./${tagName}'`;
-  const componentImport = importComponent ? `import ${importPath};\n` : '';
+function specTemplate(tagName: string, importComponent = false): string {
+  const componentImport = importComponent ? `import './${tagName}';\n` : '';
   return `import { describe, it, expect, render } from '@stencil/vitest';
 ${componentImport}
 describe('${tagName}', () => {
@@ -411,24 +418,17 @@ async function generateExampleTests(rootDir: string, projects: Project[]): Promi
       const suffix = parsePattern(project.pattern);
       if (!suffix) continue;
 
-      const dir = project.subdirectory
-        ? join(componentsDir, entry.name, project.subdirectory)
-        : join(componentsDir, entry.name);
-      const specFile = join(dir, `${tagName}${suffix}`);
+      const specFile = join(componentsDir, entry.name, `${tagName}${suffix}`);
       if (await fileExists(specFile)) continue;
 
-      if (project.subdirectory) await mkdir(dir, { recursive: true });
-      const content =
-        project.type === 'browser'
-          ? specTemplate(tagName, false, project.subdirectory)
-          : specTemplate(tagName, project.loadMethod === 'plugin', project.subdirectory);
+      const content = specTemplate(tagName, project.loadMethod === 'plugin');
       await writeFile(specFile, content, 'utf8');
     }
   }
 }
 
 function needsBuild(project: Project): boolean {
-  return project.type === 'browser' || (project.type === 'node' && project.loadMethod === 'full-build');
+  return project.loadMethod === 'full-build';
 }
 
 /** Adds `test` and `test:<name>` scripts to package.json if they don't already exist. */
@@ -485,7 +485,7 @@ export const wizard: StencilWizardPlugin = {
 
       let keepAdding = true;
       while (keepAdding) {
-        const project = await promptProject(prompts, usedPatterns, outputTargets, isFirst, isNewProject);
+        const project = await promptProject(prompts, usedPatterns, outputTargets, isFirst);
         projects.push(project);
         isFirst = false;
 
@@ -501,9 +501,7 @@ export const wizard: StencilWizardPlugin = {
         s.stop('Dependencies installed');
       }
 
-      const needsSetupFile = projects.some(
-        (p) => p.type === 'browser' || (p.type === 'node' && p.loadMethod === 'full-build'),
-      );
+      const needsSetupFile = projects.some((p) => p.loadMethod === 'full-build');
       if (needsSetupFile) {
         const setupPath = join(rootDir, 'vitest-setup.ts');
         if (!(await fileExists(setupPath))) {
@@ -532,31 +530,22 @@ export const wizard: StencilWizardPlugin = {
 
   generate: {
     fileTemplates: async (ctx: GenerateContext) => {
-      const { prompts, config } = ctx;
+      const { config } = ctx;
       const projects = await loadVitestProjects(config.rootDir);
-
-      const rawSubdir = await prompts.text({
-        message: 'Test file subdirectory? (leave blank to co-locate with component)',
-        placeholder: 'e.g. __tests__',
-        defaultValue: '',
-      });
-      const subdirectory = !prompts.isCancel(rawSubdir) ? (rawSubdir as string).trim() || undefined : undefined;
 
       if (projects.length === 0) {
         return [
           {
             label: 'Spec test (.spec.tsx)',
             extension: 'spec.tsx',
-            subdirectory,
             selectedByDefault: true,
-            template: (tagName: string) => specTemplate(tagName, true, subdirectory),
+            template: (tagName: string) => specTemplate(tagName, true),
           },
           {
             label: 'Browser test (.browser.spec.ts)',
             extension: 'browser.spec.ts',
-            subdirectory,
             selectedByDefault: false,
-            template: (tagName: string) => specTemplate(tagName, false, subdirectory),
+            template: (tagName: string) => specTemplate(tagName, false),
           },
         ];
       }
@@ -570,12 +559,8 @@ export const wizard: StencilWizardPlugin = {
           {
             label,
             extension: ext,
-            subdirectory,
             selectedByDefault: project.type === 'node',
-            template:
-              project.type === 'browser'
-                ? (tagName: string) => specTemplate(tagName, false, subdirectory)
-                : (tagName: string) => specTemplate(tagName, project.loadMethod === 'plugin', subdirectory),
+            template: (tagName: string) => specTemplate(tagName, project.loadMethod === 'plugin'),
           },
         ];
       });
