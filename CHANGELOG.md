@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/stenciljs/vitest/compare/v1.13.3...v1.14.0) (2026-07-14)
+
+
+### Features
+
+* **wizard:** integrate @stencil/unplugin ([46af228](https://github.com/stenciljs/vitest/commit/46af228ce66de364cedb81c4af54f3a9f1c5ad80))
+
 ## [1.13.3](https://github.com/stenciljs/vitest/compare/v1.13.2...v1.13.3) (2026-06-23)
 
 
