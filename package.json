@@ -92,7 +92,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@stencil/core": "^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0",
+    "@stencil/core": "^4.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0",
     "vitest": "^4.0.0 || ^3.0.0 || ^2.0.0"
   },
   "peerDependenciesMeta": {
@@ -134,7 +134,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@stencil/core": "^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0",
+    "@stencil/core": "^4.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0",
     "@stencil/cli": "^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0",
     "@types/node": "24.10.4",
     "@typescript-eslint/eslint-plugin": "^8.50.0",
@@ -151,5 +151,10 @@
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || >=24.0.0"
   },
-  "packageManager": "pnpm@10.26.0"
+  "packageManager": "pnpm@10.26.0",
+  "pnpm": {
+    "overrides": {
+      "wizard-playground>@stencil/core": "5.0.0-alpha.26"
+    }
+  }
 }

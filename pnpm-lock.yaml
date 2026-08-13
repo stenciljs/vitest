@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  wizard-playground>@stencil/core: 5.0.0-alpha.26
+
 importers:
 
   .:
@@ -34,7 +37,7 @@ importers:
         specifier: ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0
         version: 5.0.0-alpha.8(@stencil/core@4.43.5)
       '@stencil/core':
-        specifier: ^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0
+        specifier: ^4.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0
         version: 4.43.5
       '@types/node':
         specifier: 24.10.4
@@ -73,7 +76,7 @@ importers:
   packages/vitest-environment-stencil:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0
+        specifier: ^4.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0
         version: 4.43.5
       '@stencil/vitest':
         specifier: workspace:*
@@ -82,8 +85,8 @@ importers:
   test/env-comments:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0
-        version: 5.0.0-alpha.26(rollup@4.54.0)
+        specifier: ^4.0.0
+        version: 4.43.5
     devDependencies:
       '@stencil/vitest':
         specifier: workspace:*
@@ -113,8 +116,8 @@ importers:
   test/project:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0 || ^5.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0
-        version: 5.0.0-alpha.26(rollup@4.54.0)
+        specifier: ^4.0.0
+        version: 4.43.5
       css-reset-and-normalize:
         specifier: ^2.3.6
         version: 2.3.6
@@ -147,7 +150,7 @@ importers:
   test/wizard-playground:
     dependencies:
       '@stencil/core':
-        specifier: '>=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0'
+        specifier: 5.0.0-alpha.26
         version: 5.0.0-alpha.26(rollup@4.54.0)
 
 packages:
@@ -4246,7 +4249,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.5
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -4348,7 +4351,7 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
       estree-walker: 2.0.2
-      picomatch: 4.0.3
+      picomatch: 4.0.5
     optionalDependencies:
       rollup: 4.54.0
 
@@ -4611,7 +4614,7 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.32.0
       magic-string: 0.30.21
-      picomatch: 4.0.3
+      picomatch: 4.0.5
       postcss: 8.5.6
       postcss-safe-parser: 7.0.1(postcss@8.5.6)
       postcss-selector-parser: 7.1.4
