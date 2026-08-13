@@ -14,7 +14,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@stencil/core": "5.0.0-alpha.26"
+    "@stencil/core": ">=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0"
   },
   "pnpm": {
     "overrides": {
