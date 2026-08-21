@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/stenciljs/vitest/compare/v1.14.0...v1.15.0) (2026-08-21)
+
+
+### Features
+
+* support `clonable` and `serializable` to html serialization ([4f1ee2e](https://github.com/stenciljs/vitest/commit/4f1ee2eca14e64a42778021873e61f97778559fa))
+
 # [1.14.0](https://github.com/stenciljs/vitest/compare/v1.13.3...v1.14.0) (2026-07-14)
 
 
