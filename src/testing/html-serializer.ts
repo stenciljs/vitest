@@ -142,6 +142,14 @@ function serializeElementWithShadow(
       shadowRootTag += ' shadowrootdelegatesfocus';
     }
 
+    // Add serializable/clonable if true
+    if ((shadowRoot as any).serializable) {
+      shadowRootTag += ' shadowrootserializable';
+    }
+    if ((shadowRoot as any).clonable) {
+      shadowRootTag += ' shadowrootclonable';
+    }
+
     shadowRootTag += '>';
     html += shadowRootTag;
 
