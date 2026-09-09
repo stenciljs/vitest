@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/stenciljs/vitest/compare/v1.15.0...v1.15.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **plugin:** return `map` not incorrect `sourcemap` ([4a34ecc](https://github.com/stenciljs/vitest/commit/4a34ecc8b9b6ac947092efad03a3808bab7852f4))
+
 # [1.15.0](https://github.com/stenciljs/vitest/compare/v1.14.0...v1.15.0) (2026-08-21)
 
 
