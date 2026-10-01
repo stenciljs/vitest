@@ -2,6 +2,7 @@ import { transpile } from '@stencil/core/compiler';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import type { Plugin } from 'vitest/config';
+import { inlineImportedResolveVars } from './resolve-var.js';
 
 // TypeScript JsxEmit enum values — stable across versions
 const JSX_EMIT: Record<string, number> = {
@@ -133,8 +134,14 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
       }
 
       try {
+        // `transpile()` type-checks this one file in isolation, so `resolveVar()` cannot see
+        // constants imported from other modules. Inline those first so `@Event` / `@Listen`
+        // decorators that read event names from a shared catalog compile the same way they
+        // do under `stencil build`.
+        const source = inlineImportedResolveVars(code, id);
+
         const jsxOpts = readJsxOptsFromTsConfig(process.cwd());
-        const result = await transpile(code, {
+        const result = await transpile(source, {
           file: id,
           // 'customelement' appends a customElements.define() call so the component
           // self-registers the moment this module is imported - no loader needed.
