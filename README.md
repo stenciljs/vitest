@@ -18,6 +18,7 @@ First-class testing utilities for Stencil components, powered by Vitest.
 - [Stencil Vitest Plugin (Experimental)](#stencil-vitest-plugin)
   - [Setup](#setup)
   - [Mocking component dependencies](#mocking-component-dependencies)
+  - [`resolveVar()` with imported constants](#resolvevar-with-imported-constants)
   - [Limitations](#limitations)
 - [Snapshots](#snapshots)
 - [Screenshot Testing](#screenshot-testing)
@@ -553,6 +554,28 @@ it('renders using the mocked utility', async () => {
   expect(capitalize).toHaveBeenCalledWith('hello');
 });
 ```
+
+### `resolveVar()` with imported constants
+
+Stencil's `resolveVar()` lets `@Event` and `@Listen` read their event names from a constant instead of a hardcoded string. Under `stencil build` that constant can live anywhere - including a shared package - because the whole project is type-checked together. The `transpile()` call this plugin relies on only sees one file at a time, so it cannot follow an import on its own.
+
+The plugin closes that gap: before handing a component to Stencil it resolves any `resolveVar()` argument that is rooted at an `import` (honouring your `tsconfig.json` `paths` / `moduleResolution`) and inlines the string literal. Same-file constants are left for Stencil to handle as usual.
+
+```tsx
+import { Component, Event, EventEmitter, Listen, resolveVar } from '@stencil/core';
+import { EVENTS } from '@my-org/design-tokens';
+
+@Component({ tag: 'my-emitter', shadow: true })
+export class MyEmitter {
+  // ✅ works under both `stencil build` and the plugin
+  @Event({ eventName: resolveVar(EVENTS.MY_EMITTER.PING_EVENT) }) ping: EventEmitter<string>;
+
+  @Listen(resolveVar(EVENTS.MY_EMITTER.PONG_EVENT))
+  onPong() {}
+}
+```
+
+The argument must still resolve to a string literal (`as const` catalogs, or a plain `'literal'` initializer). Anything else is passed through unchanged and Stencil reports its usual `resolveVar()` diagnostic.
 
 ### Limitations
 
