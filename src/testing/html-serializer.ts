@@ -269,8 +269,9 @@ export function prettifyHtml(html: string): string {
 }
 
 /**
- * Normalize HTML for comparison by removing extra whitespace
+ * Normalize HTML for comparison by removing extra whitespace,
+ * including whitespace between a tag and its text content
  */
 export function normalizeHtml(html: string): string {
-  return html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
+  return html.replace(/\s+/g, ' ').replace(/>\s+/g, '>').replace(/\s+</g, '<').trim();
 }

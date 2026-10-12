@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/stenciljs/vitest/compare/v1.16.0...v1.16.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* serializer removes whitespace between `<tag> and text` ([ee31407](https://github.com/stenciljs/vitest/commit/ee314077ab8e9dd2e10ef89ff01d2e6ca2e21dfc))
+
 # [1.16.0](https://github.com/stenciljs/vitest/compare/v1.15.1...v1.16.0) (2026-10-12)
 
 

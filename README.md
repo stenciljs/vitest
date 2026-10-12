@@ -114,13 +114,15 @@ export default defineVitestConfig({
 ```typescript
 // vitest-setup.ts
 
-// Load Stencil components.
-// Adjust according to your build output of choice *
-await import('./dist/test-components/test-components.esm.js');
+// Load your components' lazy-loader build.
+// Stencil v5: dist/loader-bundle/<namespace>/<namespace>.js
+// Stencil v4: dist/<namespace>/<namespace>.esm.js
+await import('./dist/loader-bundle/test-components/test-components.js');
 
 export {};
-// * Bear in mind, you may need `buildDist: true` (in your stencil.config)
-// or `--prod` to use an output other than the browser lazy-loader
+// To test against a different output target, set `skipInDev: false` on it in your
+// stencil.config (Stencil v4: `buildDist: true`), or run with `--prod`.
+// Development builds skip those outputs otherwise.
 ```
 
 ### 4. Write Tests
@@ -231,11 +233,11 @@ Spy on component methods, props, and lifecycle hooks to verify behaviour without
 >
 > ```diff
 > // vitest-setup.ts
-> - await import('./dist/test-components/test-components.esm.js');
+> - await import('./dist/loader-bundle/test-components/test-components.js');
 >
 > + import { beforeAll } from 'vitest';
 > + beforeAll(async () => {
-> +   await import('./dist/test-components/test-components.esm.js');
+> +   await import('./dist/loader-bundle/test-components/test-components.js');
 > + });
 > ```
 
