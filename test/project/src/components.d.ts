@@ -67,6 +67,15 @@ export namespace Components {
     interactive: boolean;
   }
   /**
+   * Emits and listens to events whose names come from an imported catalog via `resolveVar()`.
+   * Used to verify the stencilVitestPlugin resolves imported constants that Stencil's
+   * single-file `transpile()` cannot see.
+   */
+  interface MyEmitter {
+    emitPing: (detail: string) => Promise<void>;
+    emitPong: () => Promise<void>;
+  }
+  /**
    * A label component that formats its value using the capitalize utility.
    * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
    */
@@ -88,6 +97,10 @@ export namespace Components {
 export interface MyButtonCustomEvent<T> extends CustomEvent<T> {
   detail: T;
   target: HTMLMyButtonElement;
+}
+export interface MyEmitterCustomEvent<T> extends CustomEvent<T> {
+  detail: T;
+  target: HTMLMyEmitterElement;
 }
 declare global {
   /**
@@ -168,6 +181,61 @@ declare global {
     prototype: HTMLMyCardElement;
     new (): HTMLMyCardElement;
   };
+  interface HTMLMyEmitterElementEventMap {
+    myEmitterPing: string;
+    myEmitterPong: void;
+  }
+  /**
+   * Emits and listens to events whose names come from an imported catalog via `resolveVar()`.
+   * Used to verify the stencilVitestPlugin resolves imported constants that Stencil's
+   * single-file `transpile()` cannot see.
+   */
+  interface HTMLMyEmitterElement extends Components.MyEmitter, HTMLStencilElement {
+    addEventListener<K extends keyof HTMLMyEmitterElementEventMap>(
+      type: K,
+      listener: (this: HTMLMyEmitterElement, ev: MyEmitterCustomEvent<HTMLMyEmitterElementEventMap[K]>) => any,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener<K extends keyof DocumentEventMap>(
+      type: K,
+      listener: (this: Document, ev: DocumentEventMap[K]) => any,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener<K extends keyof HTMLElementEventMap>(
+      type: K,
+      listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof HTMLMyEmitterElementEventMap>(
+      type: K,
+      listener: (this: HTMLMyEmitterElement, ev: MyEmitterCustomEvent<HTMLMyEmitterElementEventMap[K]>) => any,
+      options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof DocumentEventMap>(
+      type: K,
+      listener: (this: Document, ev: DocumentEventMap[K]) => any,
+      options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof HTMLElementEventMap>(
+      type: K,
+      listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+      options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | EventListenerOptions,
+    ): void;
+  }
+  var HTMLMyEmitterElement: {
+    prototype: HTMLMyEmitterElement;
+    new (): HTMLMyEmitterElement;
+  };
   /**
    * A label component that formats its value using the capitalize utility.
    * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
@@ -193,6 +261,7 @@ declare global {
     'my-badge': HTMLMyBadgeElement;
     'my-button': HTMLMyButtonElement;
     'my-card': HTMLMyCardElement;
+    'my-emitter': HTMLMyEmitterElement;
     'my-label': HTMLMyLabelElement;
     'non-shadow-component': HTMLNonShadowComponentElement;
   }
@@ -263,6 +332,15 @@ declare namespace LocalJSX {
     interactive?: boolean;
   }
   /**
+   * Emits and listens to events whose names come from an imported catalog via `resolveVar()`.
+   * Used to verify the stencilVitestPlugin resolves imported constants that Stencil's
+   * single-file `transpile()` cannot see.
+   */
+  interface MyEmitter {
+    onMyEmitterPing?: (event: MyEmitterCustomEvent<string>) => void;
+    onMyEmitterPong?: (event: MyEmitterCustomEvent<void>) => void;
+  }
+  /**
    * A label component that formats its value using the capitalize utility.
    * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
    */
@@ -320,6 +398,7 @@ declare namespace LocalJSX {
     'my-card': Omit<MyCard, keyof MyCardAttributes> & { [K in keyof MyCard & keyof MyCardAttributes]?: MyCard[K] } & {
       [K in keyof MyCard & keyof MyCardAttributes as `attr:${K}`]?: MyCardAttributes[K];
     } & { [K in keyof MyCard & keyof MyCardAttributes as `prop:${K}`]?: MyCard[K] };
+    'my-emitter': MyEmitter;
     'my-label': Omit<MyLabel, keyof MyLabelAttributes> & {
       [K in keyof MyLabel & keyof MyLabelAttributes]?: MyLabel[K];
     } & { [K in keyof MyLabel & keyof MyLabelAttributes as `attr:${K}`]?: MyLabelAttributes[K] } & {
@@ -351,6 +430,12 @@ declare module '@stencil/core' {
        * A card component with header, content, and footer slots
        */
       'my-card': LocalJSX.IntrinsicElements['my-card'] & JSXBase.HTMLAttributes<HTMLMyCardElement>;
+      /**
+       * Emits and listens to events whose names come from an imported catalog via `resolveVar()`.
+       * Used to verify the stencilVitestPlugin resolves imported constants that Stencil's
+       * single-file `transpile()` cannot see.
+       */
+      'my-emitter': LocalJSX.IntrinsicElements['my-emitter'] & JSXBase.HTMLAttributes<HTMLMyEmitterElement>;
       /**
        * A label component that formats its value using the capitalize utility.
        * Used to demonstrate vi.mock() working with the stencilVitestPlugin.
