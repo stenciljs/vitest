@@ -1,3 +1,10 @@
+## [1.16.2](https://github.com/stenciljs/vitest/compare/v1.16.1...v1.16.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **deps:** allow @stencil/core release candidates in peer ranges ([#106](https://github.com/stenciljs/vitest/issues/106)) ([45bb23e](https://github.com/stenciljs/vitest/commit/45bb23e22129205991f55a23927608fdc7e447bc))
+
 ## [1.16.1](https://github.com/stenciljs/vitest/compare/v1.16.0...v1.16.1) (2026-10-12)
 
 
