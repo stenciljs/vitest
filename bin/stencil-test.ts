@@ -104,7 +104,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     verbose: false,
     debug: false,
     prod: false,
-    build: false,
+    build: true,
     coverage: false,
     noCoverage: false,
     ui: false,
@@ -761,6 +761,13 @@ process.on('SIGTERM', () => cleanup());
 
 // Main async function to setup and start the processes
 (async () => {
+  // stencil-test always builds first; testing existing build output is plain `vitest`
+  if (!args.build) {
+    console.warn(
+      '[stencil-test] --no-build is not supported: stencil-test always builds Stencil before testing. To test the existing build output, run `vitest` directly.',
+    );
+  }
+
   // Extract vitest --config path if provided
   let vitestConfigPath: string | undefined;
   const configIndex = args.vitestArgs.indexOf('--config');
