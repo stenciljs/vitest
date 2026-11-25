@@ -12,7 +12,7 @@
     "test": "stencil-test"
   },
   "dependencies": {
-    "@stencil/core": "^4.0.0",
+    "@stencil/core": "^4.45.5",
     "css-reset-and-normalize": "^2.3.6"
   },
   "devDependencies": {

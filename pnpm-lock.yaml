@@ -35,10 +35,10 @@ importers:
         version: 10.0.1(semantic-release@25.0.2(typescript@5.8.3))
       '@stencil/cli':
         specifier: ^5.0.0-alpha.0
-        version: 5.0.0-alpha.8(@stencil/core@4.45.2)
+        version: 5.0.0-alpha.8(@stencil/core@4.45.5)
       '@stencil/core':
-        specifier: ^4.0.0 || ^5.0.0-alpha.0
-        version: 4.45.2
+        specifier: ^4.45.5
+        version: 4.45.5
       '@types/node':
         specifier: 24.10.4
         version: 24.10.4
@@ -94,8 +94,8 @@ importers:
   test/env-comments:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0
-        version: 4.45.2
+        specifier: ^4.45.5
+        version: 4.45.5
     devDependencies:
       '@stencil/vitest':
         specifier: workspace:*
@@ -125,8 +125,8 @@ importers:
   test/project:
     dependencies:
       '@stencil/core':
-        specifier: ^4.0.0
-        version: 4.45.2
+        specifier: ^4.45.5
+        version: 4.45.5
       css-reset-and-normalize:
         specifier: ^2.3.6
         version: 2.3.6
@@ -1190,8 +1190,8 @@ packages:
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
-  '@stencil/core@4.45.2':
-    resolution: {integrity: sha512-CNkPVZsqyNMjFMX9bEkMJsvBbQxjLw480OaoamoqiLPdQCFjJQReeOjnWX1A5ivSn3UYEIJ6MoN5VXDkaHGt8Q==}
+  '@stencil/core@4.45.5':
+    resolution: {integrity: sha512-tz6h9MI/s0WwNsfGbSguo9+xnerWam8NI8/U3VUS9MNMviTYyg3Ymz5XniSM9PGFnbd2xhhmyJhHHaFmy9mYog==}
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
@@ -4488,11 +4488,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@stencil/cli@5.0.0-alpha.8(@stencil/core@4.45.2)':
+  '@stencil/cli@5.0.0-alpha.8(@stencil/core@4.45.5)':
     dependencies:
       '@clack/prompts': 1.5.1
-      '@stencil/core': 4.45.2
-      '@stencil/dev-server': 5.0.0-alpha.8(@stencil/core@4.45.2)
+      '@stencil/core': 4.45.5
+      '@stencil/dev-server': 5.0.0-alpha.8(@stencil/core@4.45.5)
       '@stencil/templates': 5.0.0-alpha.7
       nypm: 0.3.12
       std-env: 3.10.0
@@ -4511,7 +4511,7 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.44.0
       '@rollup/rollup-win32-x64-msvc': 4.44.0
 
-  '@stencil/core@4.45.2':
+  '@stencil/core@4.45.5':
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.44.0
       '@rollup/rollup-darwin-x64': 4.44.0
@@ -4561,9 +4561,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@stencil/dev-server@5.0.0-alpha.8(@stencil/core@4.45.2)':
+  '@stencil/dev-server@5.0.0-alpha.8(@stencil/core@4.45.5)':
     dependencies:
-      '@stencil/core': 4.45.2
+      '@stencil/core': 4.45.5
       launch-editor: 2.14.1
       open: 11.0.0
       ws: 8.21.0
