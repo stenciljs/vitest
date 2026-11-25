@@ -1,6 +1,6 @@
 {
   "name": "vitest-environment-stencil",
-  "version": "1.16.1",
+  "version": "1.16.2",
   "description": "Custom Vitest environment for Stencil component testing",
   "type": "module",
   "main": "./index.mjs",
@@ -32,7 +32,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@stencil/core": "^4.0.0 || >=5.0.0-alpha.0 <5.0.0-next.0 || ^5.0.0"
+    "@stencil/core": "^4.0.0 || ^5.0.0-alpha.0"
   },
   "dependencies": {
     "@stencil/vitest": "workspace:*"
