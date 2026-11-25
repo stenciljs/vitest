@@ -1,10 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inlineImportedResolveVars } from '../resolve-var.js';
 
 let root: string;
+
+function inline(code: string, file: string): string {
+  return inlineImportedResolveVars(code, file).code;
+}
 
 function write(relPath: string, contents: string): string {
   const absPath = join(root, relPath);
@@ -41,7 +45,7 @@ describe('inlineImportedResolveVars', () => {
   it('leaves source untouched when there is no resolveVar() call', () => {
     const code = `import { Component } from '@stencil/core';\n@Component({ tag: 'my-cmp' }) export class Cmp {}`;
     const file = write('src/cmp.tsx', code);
-    expect(inlineImportedResolveVars(code, file)).toBe(code);
+    expect(inline(code, file)).toBe(code);
   });
 
   it('leaves same-file constants to the Stencil compiler', () => {
@@ -56,7 +60,7 @@ describe('inlineImportedResolveVars', () => {
       `}`,
     ].join('\n');
     const file = write('src/cmp.tsx', code);
-    expect(inlineImportedResolveVars(code, file)).toBe(code);
+    expect(inline(code, file)).toBe(code);
   });
 
   it('inlines a nested property of an imported `as const` catalog', () => {
@@ -76,7 +80,7 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    const out = inlineImportedResolveVars(code, file);
+    const out = inline(code, file);
 
     expect(out).toContain(`@Event({ eventName: "locationChange", bubbles: true }) change;`);
     expect(out).toContain(`@Listen("locationClear")`);
@@ -95,7 +99,7 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    expect(inlineImportedResolveVars(code, file)).toContain(`@Listen("myEvent")`);
+    expect(inline(code, file)).toContain(`@Listen("myEvent")`);
   });
 
   it('resolves through a tsconfig `paths` alias and a re-exporting barrel', () => {
@@ -115,10 +119,10 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    expect(inlineImportedResolveVars(code, file)).toContain(`@Event({ eventName: "buttonClick" }) click;`);
+    expect(inline(code, file)).toContain(`@Event({ eventName: "buttonClick" }) click;`);
   });
 
-  it('falls back to the declaration initializer when the catalog is not `as const`', () => {
+  it('leaves an object catalog without `as const` for Stencil to reject, as `stencil build` does', () => {
     write('src/events.ts', `export const EVENTS = { MY_EVENT: 'myEvent' };`);
     const code = [
       `import { Component, Listen, resolveVar } from '@stencil/core';`,
@@ -128,7 +132,33 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    expect(inlineImportedResolveVars(code, file)).toContain(`@Listen("myEvent")`);
+    expect(inline(code, file)).toBe(code);
+  });
+
+  it('falls back to the initializer of a widened variable, as `stencil build` does', () => {
+    write('src/events.ts', `export let MY_EVENT = 'myEvent';`);
+    const code = [
+      `import { Component, Listen, resolveVar } from '@stencil/core';`,
+      `import { MY_EVENT } from './events';`,
+      `@Component({ tag: 'my-cmp' })`,
+      `export class Cmp { @Listen(resolveVar(MY_EVENT)) onIt() {} }`,
+    ].join('\n');
+    const file = write('src/cmp.tsx', code);
+
+    expect(inline(code, file)).toContain(`@Listen("myEvent")`);
+  });
+
+  it('falls back to the initializer of a static class property, as `stencil build` does', () => {
+    write('src/events.ts', `export class Events { static MY_EVENT = 'myEvent'; }`);
+    const code = [
+      `import { Component, Listen, resolveVar } from '@stencil/core';`,
+      `import { Events } from './events';`,
+      `@Component({ tag: 'my-cmp' })`,
+      `export class Cmp { @Listen(resolveVar(Events.MY_EVENT)) onIt() {} }`,
+    ].join('\n');
+    const file = write('src/cmp.tsx', code);
+
+    expect(inline(code, file)).toContain(`@Listen("myEvent")`);
   });
 
   it('supports namespace imports', () => {
@@ -141,7 +171,7 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    expect(inlineImportedResolveVars(code, file)).toContain(`@Listen("myEvent")`);
+    expect(inline(code, file)).toContain(`@Listen("myEvent")`);
   });
 
   it('leaves calls that do not resolve to a string literal for Stencil to report', () => {
@@ -154,7 +184,7 @@ describe('inlineImportedResolveVars', () => {
     ].join('\n');
     const file = write('src/cmp.tsx', code);
 
-    expect(inlineImportedResolveVars(code, file)).toBe(code);
+    expect(inline(code, file)).toBe(code);
   });
 
   it('uses the in-memory source rather than what is on disk', () => {
@@ -168,6 +198,81 @@ describe('inlineImportedResolveVars', () => {
     const file = write('src/cmp.tsx', onDisk);
     const inMemory = onDisk.replace('EVENTS.A', 'EVENTS.B');
 
-    expect(inlineImportedResolveVars(inMemory, file)).toContain(`@Listen("b")`);
+    expect(inline(inMemory, file)).toContain(`@Listen("b")`);
+  });
+
+  it('reports the project files the values came from as dependencies', () => {
+    const base = write('src/catalog/base.events.ts', `export const BASE = { CLICK: 'click' } as const;`);
+    const barrel = write(
+      'src/catalog/index.ts',
+      [`import { BASE } from './base.events';`, `export const EVENTS = { ...BASE } as const;`].join('\n'),
+    );
+    const code = [
+      `import { Component, Listen, resolveVar } from '@stencil/core';`,
+      `import { EVENTS } from '@catalog';`,
+      `@Component({ tag: 'my-cmp' })`,
+      `export class Cmp { @Listen(resolveVar(EVENTS.CLICK)) onIt() {} }`,
+    ].join('\n');
+    const file = write('src/cmp.tsx', code);
+
+    const { dependencies } = inlineImportedResolveVars(code, file);
+    expect(dependencies).toEqual(expect.arrayContaining([base, barrel]));
+    expect(dependencies).not.toContain(file);
+    expect(dependencies.some((dep) => dep.includes('/node_modules/'))).toBe(false);
+  });
+
+  it('reports no dependencies when nothing is inlined', () => {
+    const code = `import { Component } from '@stencil/core';\n@Component({ tag: 'my-cmp' }) export class Cmp {}`;
+    const file = write('src/cmp.tsx', code);
+    expect(inlineImportedResolveVars(code, file).dependencies).toEqual([]);
+  });
+
+  it('resolves components under different tsconfigs independently', () => {
+    const component = (pkg: string) => {
+      write(
+        `${pkg}/tsconfig.json`,
+        JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@catalog': ['catalog.ts'] } } }),
+      );
+      write(`${pkg}/catalog.ts`, `export const EVENT = '${pkg}Event';`);
+      const code = [
+        `import { Component, Listen, resolveVar } from '@stencil/core';`,
+        `import { EVENT } from '@catalog';`,
+        `@Component({ tag: 'my-cmp' })`,
+        `export class Cmp { @Listen(resolveVar(EVENT)) onIt() {} }`,
+      ].join('\n');
+      return { code, file: write(`${pkg}/cmp.tsx`, code) };
+    };
+    const a = component('pkgA');
+    const b = component('pkgB');
+
+    for (let i = 0; i < 2; i++) {
+      expect(inline(a.code, a.file)).toContain(`@Listen("pkgAEvent")`);
+      expect(inline(b.code, b.file)).toContain(`@Listen("pkgBEvent")`);
+    }
+  });
+
+  it('picks up tsconfig.json changes', () => {
+    write('src/catalog/one.ts', `export const EVENT = 'one';`);
+    write('src/catalog/two.ts', `export const EVENT = 'two';`);
+    const writeConfig = (target: string, mtime: Date) => {
+      const config = write(
+        'tsconfig.json',
+        JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@catalog': [target] } } }),
+      );
+      utimesSync(config, mtime, mtime);
+    };
+    const code = [
+      `import { Component, Listen, resolveVar } from '@stencil/core';`,
+      `import { EVENT } from '@catalog';`,
+      `@Component({ tag: 'my-cmp' })`,
+      `export class Cmp { @Listen(resolveVar(EVENT)) onIt() {} }`,
+    ].join('\n');
+    const file = write('src/cmp.tsx', code);
+
+    writeConfig('src/catalog/one.ts', new Date(2000, 0, 1));
+    expect(inline(code, file)).toContain(`@Listen("one")`);
+
+    writeConfig('src/catalog/two.ts', new Date(2001, 0, 1));
+    expect(inline(code, file)).toContain(`@Listen("two")`);
   });
 });

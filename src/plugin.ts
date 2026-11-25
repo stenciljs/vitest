@@ -138,7 +138,10 @@ export function stencilVitestPlugin(opts: { css?: boolean } = {}): Plugin {
         // constants imported from other modules. Inline those first so `@Event` / `@Listen`
         // decorators that read event names from a shared catalog compile the same way they
         // do under `stencil build`.
-        const source = inlineImportedResolveVars(code, id);
+        const { code: source, dependencies } = inlineImportedResolveVars(code, id);
+        for (const dependency of dependencies) {
+          this.addWatchFile(dependency);
+        }
 
         const jsxOpts = readJsxOptsFromTsConfig(process.cwd());
         const result = await transpile(source, {

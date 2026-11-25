@@ -22,8 +22,38 @@ interface TextEdit {
   text: string;
 }
 
-let cachedProgram: TS.Program | undefined;
-let cachedOptionsKey: string | undefined;
+export interface InlineResult {
+  code: string;
+  /**
+   * Project files the resolved values were read from. Inlining drops the last use of the
+   * import, so `transpile()` elides it; callers must register these with the bundler (e.g.
+   * `this.addWatchFile()`) or edits to them will not invalidate the component.
+   */
+  dependencies: string[];
+}
+
+interface CachedOptions {
+  key: string;
+  mtime: number;
+  options: TS.CompilerOptions;
+}
+
+/** Parsed compiler options keyed by `tsconfig.json` path ('' when there is none). */
+const optionsCache = new Map<string, CachedOptions>();
+
+/** Last program per distinct set of compiler options, reused as `oldProgram`. */
+const programCache = new Map<string, TS.Program>();
+
+/**
+ * Only `compilerOptions` are needed, so skip expanding `include` / `files` globs, which
+ * would otherwise walk the project directory.
+ */
+const configParseHost: TS.ParseConfigHost = {
+  fileExists: (path) => ts.sys.fileExists(path),
+  readDirectory: () => [],
+  readFile: (path) => ts.sys.readFile(path),
+  useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
+};
 
 /** Parsed source files for everything except the file being transformed, keyed by path. */
 const sourceFileCache = new Map<string, { mtime: number; sourceFile: TS.SourceFile }>();
@@ -101,17 +131,22 @@ function findImportedResolveVarCalls(sourceFile: TS.SourceFile): ResolveVarCall[
  * so `paths`, `baseUrl` and `moduleResolution` match the project, then forces the settings
  * that make module resolution work and emit irrelevant.
  */
-function loadCompilerOptions(fileName: string): TS.CompilerOptions {
+function loadCompilerOptions(fileName: string): CachedOptions {
+  const configPath = ts.findConfigFile(dirname(fileName), ts.sys.fileExists) ?? '';
+  const mtime = configPath ? (ts.sys.getModifiedTime?.(configPath)?.getTime() ?? 0) : 0;
+  const cached = optionsCache.get(configPath);
+  if (cached && cached.mtime === mtime) return cached;
+
   let projectOptions: TS.CompilerOptions = {};
-  const configPath = ts.findConfigFile(dirname(fileName), ts.sys.fileExists);
   if (configPath) {
     const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
     if (config) {
-      projectOptions = ts.parseJsonConfigFileContent(config, ts.sys, dirname(configPath)).options;
+      projectOptions = ts.parseJsonConfigFileContent(config, configParseHost, dirname(configPath), undefined, configPath)
+        .options;
     }
   }
 
-  return {
+  const options: TS.CompilerOptions = {
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     target: ts.ScriptTarget.ESNext,
@@ -130,9 +165,13 @@ function loadCompilerOptions(fileName: string): TS.CompilerOptions {
     tsBuildInfoFile: undefined,
     jsx: projectOptions.jsx ?? ts.JsxEmit.Preserve,
   };
+
+  const entry: CachedOptions = { key: JSON.stringify(options), mtime, options };
+  optionsCache.set(configPath, entry);
+  return entry;
 }
 
-function createProgram(fileName: string, code: string, options: TS.CompilerOptions): TS.Program {
+function createProgram(fileName: string, code: string, { key, options }: CachedOptions): TS.Program {
   const target = normalize(fileName);
   const host = ts.createCompilerHost(options, true);
   const getSourceFile = host.getSourceFile.bind(host);
@@ -155,40 +194,75 @@ function createProgram(fileName: string, code: string, options: TS.CompilerOptio
     return sourceFile;
   };
 
-  const optionsKey = JSON.stringify(options);
-  const oldProgram = cachedOptionsKey === optionsKey ? cachedProgram : undefined;
-  const program = ts.createProgram({ rootNames: [fileName], options, host, oldProgram });
-  cachedProgram = program;
-  cachedOptionsKey = optionsKey;
+  const program = ts.createProgram({ rootNames: [fileName], options, host, oldProgram: programCache.get(key) });
+  programCache.set(key, program);
   return program;
 }
 
-/**
- * Mirrors the compiler's fallback: when the type is widened to `string` (object declared
- * without `as const`), read the string literal initializer off the declaration instead.
- */
-function literalFromDeclaration(checker: TS.TypeChecker, node: TS.Node): string | undefined {
-  let symbol = checker.getSymbolAtLocation(node);
-  if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
-    symbol = checker.getAliasedSymbol(symbol);
-  }
-  const declaration = symbol?.valueDeclaration;
-  if (!declaration) return undefined;
-
-  const initializer =
-    ts.isPropertyAssignment(declaration) || ts.isVariableDeclaration(declaration) ? declaration.initializer : undefined;
-  if (initializer && (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer))) {
-    return initializer.text;
-  }
-  return undefined;
+/** Project files in the program other than the component itself; `node_modules` and lib files are skipped. */
+function collectDependencies(program: TS.Program, fileName: string): string[] {
+  const target = normalize(fileName);
+  return program
+    .getSourceFiles()
+    .filter(
+      (sourceFile) =>
+        normalize(sourceFile.fileName) !== target &&
+        !program.isSourceFileDefaultLibrary(sourceFile) &&
+        !program.isSourceFileFromExternalLibrary(sourceFile) &&
+        !normalize(sourceFile.fileName).includes('/node_modules/'),
+    )
+    .map((sourceFile) => sourceFile.fileName);
 }
 
-function resolveStringValue(checker: TS.TypeChecker, arg: TS.Expression): string | undefined {
-  const type = checker.getTypeAtLocation(arg);
-  if (type.isStringLiteral()) {
-    return type.value;
+function stringLiteralValue(type: TS.Type | undefined): string | undefined {
+  return type?.isStringLiteral() ? type.value : undefined;
+}
+
+function stringFromInitializer(checker: TS.TypeChecker, initializer: TS.Expression): string | undefined {
+  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) {
+    return initializer.text;
   }
-  return literalFromDeclaration(checker, arg);
+  return stringLiteralValue(checker.getTypeAtLocation(initializer));
+}
+
+/**
+ * Mirrors `resolveVariableValue` in the Stencil compiler so this accepts exactly what
+ * `stencil build` accepts. In particular, the initializer fallback applies only to variable
+ * and class property declarations; an object literal property widened to `string` (no
+ * `as const`) is rejected by the compiler, so it is left for Stencil to report here too.
+ */
+function resolveStringValue(
+  checker: TS.TypeChecker,
+  arg: TS.Identifier | TS.PropertyAccessExpression,
+): string | undefined {
+  if (ts.isIdentifier(arg)) {
+    let symbol = checker.getSymbolAtLocation(arg);
+    if (symbol && symbol.flags & ts.SymbolFlags.Alias) {
+      symbol = checker.getAliasedSymbol(symbol);
+    }
+    const declaration = symbol?.valueDeclaration;
+    if (!declaration || !ts.isVariableDeclaration(declaration)) return undefined;
+    return (
+      stringLiteralValue(checker.getTypeAtLocation(arg)) ??
+      (declaration.initializer ? stringFromInitializer(checker, declaration.initializer) : undefined)
+    );
+  }
+
+  const property = checker.getPropertyOfType(checker.getTypeAtLocation(arg.expression), arg.name.text);
+  if (!property) return undefined;
+
+  const value = stringLiteralValue(checker.getTypeOfSymbolAtLocation(property, arg));
+  if (value !== undefined) return value;
+
+  const declaration = property.valueDeclaration;
+  if (
+    declaration &&
+    (ts.isPropertyDeclaration(declaration) || ts.isVariableDeclaration(declaration)) &&
+    declaration.initializer
+  ) {
+    return stringFromInitializer(checker, declaration.initializer);
+  }
+  return undefined;
 }
 
 /**
@@ -207,20 +281,22 @@ function resolveStringValue(checker: TS.TypeChecker, arg: TS.Expression): string
  *
  * @param code the component source
  * @param fileName the absolute path of the component source
- * @returns the source with imported `resolveVar()` calls inlined, or `code` unchanged
+ * @returns the source with imported `resolveVar()` calls inlined (or `code` unchanged), plus
+ * the files those values were resolved from
  */
-export function inlineImportedResolveVars(code: string, fileName: string): string {
-  if (!code.includes('resolveVar(')) return code;
+export function inlineImportedResolveVars(code: string, fileName: string): InlineResult {
+  const unchanged: InlineResult = { code, dependencies: [] };
+  if (!code.includes('resolveVar(')) return unchanged;
 
   const probe = ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  if (findImportedResolveVarCalls(probe).length === 0) return code;
+  if (findImportedResolveVarCalls(probe).length === 0) return unchanged;
 
   const edits: TextEdit[] = [];
+  let dependencies: string[];
   try {
-    const options = loadCompilerOptions(fileName);
-    const program = createProgram(fileName, code, options);
+    const program = createProgram(fileName, code, loadCompilerOptions(fileName));
     const sourceFile = program.getSourceFile(fileName);
-    if (!sourceFile) return code;
+    if (!sourceFile) return unchanged;
 
     const checker = program.getTypeChecker();
     for (const { arg, call } of findImportedResolveVarCalls(sourceFile)) {
@@ -228,11 +304,12 @@ export function inlineImportedResolveVars(code: string, fileName: string): strin
       if (value === undefined) continue;
       edits.push({ end: call.getEnd(), start: call.getStart(sourceFile), text: JSON.stringify(value) });
     }
+    dependencies = collectDependencies(program, fileName);
   } catch {
     // Fall through with the original source; Stencil's transpile() reports its own diagnostic.
-    return code;
+    return unchanged;
   }
-  if (edits.length === 0) return code;
+  if (edits.length === 0) return unchanged;
 
   // Apply from the end so earlier offsets stay valid.
   edits.sort((a, b) => b.start - a.start);
@@ -240,5 +317,5 @@ export function inlineImportedResolveVars(code: string, fileName: string): strin
   for (const edit of edits) {
     output = output.slice(0, edit.start) + edit.text + output.slice(edit.end);
   }
-  return output;
+  return { code: output, dependencies };
 }

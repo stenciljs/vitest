@@ -579,7 +579,7 @@ export class MyEmitter {
 }
 ```
 
-The argument must still resolve to a string literal (`as const` catalogs, or a plain `'literal'` initializer). Anything else is passed through unchanged and Stencil reports its usual `resolveVar()` diagnostic.
+The plugin accepts exactly what `stencil build` accepts: the argument must resolve to a string literal type (object catalogs need `as const`), or be a variable or class property initialized with a `'literal'`. Anything else is passed through unchanged and Stencil reports its usual `resolveVar()` diagnostic.
 
 ### Limitations
 
