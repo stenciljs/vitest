@@ -198,6 +198,27 @@ export const config = {
     });
   });
 
+  describe('--no-build', () => {
+    beforeEach(() => {
+      writeFileSync(join(testDir, 'stencil.config.ts'), `export const config = { outputTargets: [{ type: 'dist' }] };`);
+      writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'test', type: 'module' }));
+    });
+
+    it('should warn that --no-build is not supported and still build', async () => {
+      const result = await runCLIInDir(testDir, ['--no-build'], 2000);
+
+      expect(result.stderr).toMatch(/--no-build is not supported/);
+      expect(result.stderr).toMatch(/run `vitest` directly/);
+      expect(result.stdout).toMatch(/Building Stencil/);
+    });
+
+    it('should not warn without --no-build', async () => {
+      const result = await runCLIInDir(testDir, [], 2000);
+
+      expect(result.stderr).not.toMatch(/--no-build is not supported/);
+    });
+  });
+
   describe('screenshot ignore patterns', () => {
     it('should extract screenshot patterns from vitest config', async () => {
       const stencilConfig = `

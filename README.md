@@ -719,6 +719,26 @@ The `stencil-test` CLI supports most of Stencil's CLI flags and all of Vitest CL
 
 Note: unlike a normal `stencil build` `stencil-vitest` runs in development mode by default for faster builds. Use `--prod` to test against a production build.
 
+### Testing without a build
+
+`stencil-test` always builds your components before running Vitest, so tests never run against stale output. If the build is current and you've only changed test files, run Vitest directly against the existing build output:
+
+```bash
+# Build once, or again after changing component source
+npx stencil build --dev
+
+# Rerun tests without rebuilding
+npx vitest run button.spec.ts
+```
+
+`stencil-test` exposes its CLI flags to tests through environment variables (see [Global Variables](#global-variables)). To match `stencil-test --prod`, build with `--prod` and set `STENCIL_PROD=true`:
+
+```bash
+STENCIL_PROD=true npx vitest run
+```
+
+`stencil-test --no-build` is not supported. It prints a warning and builds anyway.
+
 ### Global Variables
 
 The `stencil-test` CLI exposes global variables that can be accessed in your tests to check which CLI flags were used:
